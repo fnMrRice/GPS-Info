@@ -1,0 +1,46 @@
+# Built application files
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Java/Kotlin class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+
+# Gradle files
+.gradle/
+build/
+app/build/
+
+# Local configuration
+local.properties
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Android Studio
+.navigation/
+captures/
+*.apk
+
+# Keystore files (keep out of version control)
+*.jks
+*.keystore
+
+# Log files
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Kotlin
+*.kotlin_module
