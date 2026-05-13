@@ -98,4 +98,5 @@
     <string name="logs_empty">No logs yet</string>
     <string name="logs_clear">Clear Logs</string>
     <string name="logs_auto_scroll">Auto-scroll</string>
+    <string name="request_permission_rationale">Location permission is necessary to display satellite information and your current position.</string>
 </resources>
