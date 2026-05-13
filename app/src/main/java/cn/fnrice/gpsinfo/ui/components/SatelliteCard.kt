@@ -17,7 +17,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cn.fnrice.gpsinfo.R
 import cn.fnrice.gpsinfo.data.SatelliteInfo
 
@@ -27,20 +29,23 @@ fun SatelliteCard(sat: SatelliteInfo) {
     val constellationName = remember(sat.constellationType, context) { sat.getConstellationName(context) }
     var expanded by remember { mutableStateOf(false) }
 
-    Card(
+    OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(vertical = 2.dp)
             .clickable { expanded = !expanded },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.outlinedCardColors(
             containerColor = MaterialTheme.colorScheme.surface,
+        ),
+        border = CardDefaults.outlinedCardBorder().copy(
+            brush = SolidColor(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .padding(horizontal = 8.dp, vertical = 6.dp)
                 .animateContentSize()
         ) {
             Row(
@@ -50,20 +55,20 @@ fun SatelliteCard(sat: SatelliteInfo) {
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.weight(1f)
                 ) {
                     val color = getConstellationColor(constellationName)
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
-                            .background(color.copy(alpha = 0.1f), CircleShape),
+                            .size(24.dp)
+                            .background(color.copy(alpha = 0.12f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = constellationName.take(1),
                             color = color,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -72,7 +77,7 @@ fun SatelliteCard(sat: SatelliteInfo) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(
                                 "$constellationName ${sat.svid}",
-                                style = MaterialTheme.typography.titleMedium,
+                                style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                             )
                             if (sat.hasCarrierFrequency) {
@@ -82,74 +87,75 @@ fun SatelliteCard(sat: SatelliteInfo) {
                                     else -> "L"
                                 }
                                 Surface(
-                                    color = MaterialTheme.colorScheme.secondaryContainer,
-                                    shape = RoundedCornerShape(4.dp)
+                                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
+                                    shape = RoundedCornerShape(2.dp)
                                 ) {
                                     Text(
                                         band,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                        style = MaterialTheme.typography.labelSmall,
+                                        modifier = Modifier.padding(horizontal = 3.dp, vertical = 0.dp),
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
                                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
                             }
                         }
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             if (sat.usedInFix) {
                                 Text(
                                     stringResource(R.string.sat_used_in_fix),
                                     color = MaterialTheme.colorScheme.primary,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Medium
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                    fontWeight = FontWeight.Bold
                                 )
                             } else {
                                 Text(
-                                    "未使用",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                    style = MaterialTheme.typography.labelMedium
+                                    stringResource(R.string.sat_not_used),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp)
                                 )
                             }
                             Text(
-                                "仰角: %.0f°".format(sat.elevationDegrees),
-                                style = MaterialTheme.typography.labelMedium,
+                                "${stringResource(R.string.label_elev)}: %.0f°".format(sat.elevationDegrees),
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                 }
 
-                Column(horizontalAlignment = Alignment.End) {
+                Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(start = 4.dp)) {
                     val signal = if (sat.cn0DbHz > 0) sat.cn0DbHz else if (sat.hasBasebandCn0DbHz) sat.basebandCn0DbHz else 0f
                     val signalColor = when {
-                        signal > 30 -> Color(0xFF4CAF50)
-                        signal > 20 -> Color(0xFFFF9800)
+                        signal > 35 -> Color(0xFF4CAF50)
+                        signal > 25 -> Color(0xFF8BC34A)
+                        signal > 15 -> Color(0xFFFF9800)
                         signal > 0 -> Color(0xFFF44336)
-                        else -> MaterialTheme.colorScheme.outline
+                        else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
                     }
                     
                     Text(
-                        if (signal > 0) "%.1f dB-Hz".format(signal) else "---",
-                        style = MaterialTheme.typography.titleMedium,
+                        if (signal > 0) "%.1f".format(signal) else "---",
+                        style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = signalColor,
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(1.dp))
 
                     // 简易信号强度条
                     Box(
                         modifier = Modifier
-                            .width(60.dp)
-                            .height(4.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(2.dp))
+                            .width(40.dp)
+                            .height(2.5.dp)
+                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(1.25.dp))
                     ) {
                         val progress = (signal / 45f).coerceIn(0f, 1f)
                         Box(
                             modifier = Modifier
                                 .fillMaxHeight()
                                 .fillMaxWidth(progress)
-                                .background(signalColor, RoundedCornerShape(2.dp))
+                                .background(signalColor, RoundedCornerShape(1.25.dp))
                         )
                     }
                 }
@@ -158,9 +164,9 @@ fun SatelliteCard(sat: SatelliteInfo) {
                     imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                     contentDescription = null,
                     modifier = Modifier
-                        .padding(start = 8.dp)
-                        .size(24.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        .padding(start = 4.dp)
+                        .size(18.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
                 )
             }
 

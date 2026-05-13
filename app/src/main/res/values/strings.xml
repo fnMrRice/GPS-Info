@@ -29,6 +29,7 @@
     <string name="constellation_all">All</string>
     <string name="filter_usable">Usable</string>
     <string name="sat_used_in_fix">Used in fix</string>
+    <string name="sat_not_used">Not used</string>
     <string name="label_elev">Elevation</string>
     <string name="label_azim">Azimuth</string>
     <string name="label_freq">Frequency</string>
