@@ -52,7 +52,16 @@ BAIDU_MAPS_KEY=你的百度地图API_KEY
 
 在申请地图 SDK 的 Key 时，通常需要提供 SHA1 指纹。
 
-### 3.1 方法一：使用 Gradle 获取 (推荐)
+### 3.1 方法一：使用内置脚本 (快捷方式)
+
+在项目根目录下提供了用于快速获取 SHA1 的脚本：
+
+- **Windows**: 运行 `scripts\get_sha1.ps1` (右键点击并选择“使用 PowerShell 运行”)。
+- **Linux/macOS**: 在终端运行 `bash scripts/get_sha1.sh`。
+
+脚本支持自动检测默认的调试版 (Debug) 路径，也支持通过交互方式获取发布版 (Release) 的指纹。
+
+### 3.2 方法二：使用 Gradle 获取 (推荐)
 
 这是最简单的方法，可以同时获取调试版和发布版（如果已配置签名）的 SHA1：
 
@@ -63,7 +72,7 @@ BAIDU_MAPS_KEY=你的百度地图API_KEY
 
 *注意：如果找不到 Tasks 列表，请在设置中取消勾选 "Do not build Gradle task list during Gradle sync" 并重新同步。*
 
-### 3.2 方法二：使用命令行 (keytool)
+### 3.3 方法三：使用命令行 (keytool)
 
 #### 3.2.1 调试版 (Debug)
 默认的调试版签名文件位于用户目录下：
@@ -86,7 +95,7 @@ keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -sto
    ```
 3. 按提示输入签名文件的密码。
 
-### 3.3 方法三：从 Google Play Console 获取 (适用于已上架应用)
+### 3.4 方法四：从 Google Play Console 获取 (适用于已上架应用)
 
 如果你的应用使用了 **Google Play App Signing**：
 
