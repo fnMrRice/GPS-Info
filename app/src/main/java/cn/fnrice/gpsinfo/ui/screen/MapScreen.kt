@@ -89,7 +89,19 @@ fun AMapViewContainer(latitude: Double?, longitude: Double?, modifier: Modifier 
     }
 
     AndroidView(
-        factory = { mapView },
+        factory = { 
+            mapView.apply {
+                // 设置高德地图的隐私政策（合规要求）
+                try {
+                    val privacyMethod = AMap::class.java.getMethod("updatePrivacyShow", android.content.Context::class.java, Boolean::class.java, Boolean::class.java)
+                    privacyMethod.invoke(null, context, true, true)
+                    val agreeMethod = AMap::class.java.getMethod("updatePrivacyAgree", android.content.Context::class.java, Boolean::class.java)
+                    agreeMethod.invoke(null, context, true)
+                } catch (e: Exception) {
+                    // 较旧版本或混淆可能导致反射失败，忽略
+                }
+            }
+        },
         modifier = modifier,
         update = { view ->
             val amap = view.map

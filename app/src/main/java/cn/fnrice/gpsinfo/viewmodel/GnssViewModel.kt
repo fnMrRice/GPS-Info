@@ -87,6 +87,7 @@ class GnssViewModel : ViewModel() {
         if (settingsRepository == null) {
             val repo = SettingsRepository(context.applicationContext)
             settingsRepository = repo
+            // 立即触发一次更新，避免初始白屏
             viewModelScope.launch {
                 repo.mapProviderFlow.collect { provider ->
                     _mapProvider.value = provider
@@ -125,15 +126,18 @@ class GnssViewModel : ViewModel() {
             val isGoogleReachable = withContext(Dispatchers.IO) {
                 try {
                     Socket().use { socket ->
-                        socket.connect(InetSocketAddress("www.google.com", 80), 2000)
+                        // 增加超时时间并尝试连接 google.com 的 443 端口
+                        socket.connect(InetSocketAddress("www.google.com", 443), 1500)
                         true
                     }
                 } catch (e: Exception) {
+                    addLog("Google connectivity check failed: ${e.message}")
                     false
                 }
             }
             _actualMapProvider.value = if (isGoogleReachable) MapProvider.GOOGLE else MapProvider.AMAP
         }
+        addLog("Actual Map Provider set to: ${_actualMapProvider.value}")
     }
 
     fun setMapProvider(provider: MapProvider) {

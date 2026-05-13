@@ -172,21 +172,19 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                             .padding(top = 8.dp)
                     ) {
                         // 在底层显示地图
-                        if (state.location != null) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clip(RoundedCornerShape(8.dp))
-                            ) {
-                                when (actualMapProvider) {
-                                    cn.fnrice.gpsinfo.data.MapProvider.AMAP -> {
-                                        AMapViewContainer(state.location?.latitude, state.location?.longitude)
-                                    }
-                                    cn.fnrice.gpsinfo.data.MapProvider.GOOGLE -> {
-                                        GoogleMapViewContainer(state.location?.latitude, state.location?.longitude)
-                                    }
-                                    else -> {}
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(8.dp))
+                        ) {
+                            when (actualMapProvider) {
+                                cn.fnrice.gpsinfo.data.MapProvider.AMAP -> {
+                                    AMapViewContainer(state.location?.latitude, state.location?.longitude)
                                 }
+                                cn.fnrice.gpsinfo.data.MapProvider.GOOGLE -> {
+                                    GoogleMapViewContainer(state.location?.latitude, state.location?.longitude)
+                                }
+                                else -> {}
                             }
                         }
 
