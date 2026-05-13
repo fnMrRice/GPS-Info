@@ -26,9 +26,7 @@ import cn.fnrice.gpsinfo.data.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import androidx.lifecycle.viewModelScope
 
 import kotlinx.coroutines.withContext
@@ -340,19 +338,6 @@ class GnssViewModel : ViewModel() {
         sensorListener = null
         sensorManager = null
         rotationSensor = null
-    }
-
-    fun saveSnapshot(label: String = "") {
-        val current = _state.value
-        _snapshots.value = _snapshots.value + SatelliteSnapshot(
-            satellites = current.satellites,
-            location = current.location,
-            label = label,
-        )
-    }
-
-    fun deleteSnapshot(id: Long) {
-        _snapshots.value = _snapshots.value.filterNot { it.id == id }
     }
 
     fun getGnssCapabilities(context: Context): GnssCapabilitiesInfo? {
