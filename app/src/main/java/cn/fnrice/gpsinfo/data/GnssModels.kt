@@ -14,6 +14,8 @@ data class SatelliteInfo(
     val carrierFrequencyHz: Float = 0f,
     val hasBasebandCn0DbHz: Boolean = false,
     val basebandCn0DbHz: Float = 0f,
+    val hasAlmanacData: Boolean = false,
+    val hasEphemerisData: Boolean = false,
 ) {
     fun getConstellationName(context: android.content.Context): String {
         val resId = when (constellationType) {

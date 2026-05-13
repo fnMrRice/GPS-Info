@@ -29,6 +29,13 @@
     <string name="constellation_all">全部</string>
     <string name="filter_usable">可用</string>
     <string name="sat_used_in_fix">已参与定位</string>
+    <string name="label_elev">仰角</string>
+    <string name="label_azim">方位角</string>
+    <string name="label_freq">频率</string>
+    <string name="label_cn0">载波比 (CN0)</string>
+    <string name="label_baseband_cn0">基带载波比</string>
+    <string name="label_almanac">历书</string>
+    <string name="label_ephemeris">星历</string>
     
     <string name="profile_title">设备</string>
     <string name="settings_title">设置</string>

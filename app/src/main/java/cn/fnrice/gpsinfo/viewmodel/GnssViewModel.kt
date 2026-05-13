@@ -200,6 +200,8 @@ class GnssViewModel : ViewModel() {
                         carrierFrequencyHz = carrierFreq,
                         hasBasebandCn0DbHz = hasBasebandCn0,
                         basebandCn0DbHz = basebandCn0,
+                        hasAlmanacData = status.hasAlmanacData(i),
+                        hasEphemerisData = status.hasEphemerisData(i),
                     )
                 }
                 _state.value = _state.value.copy(

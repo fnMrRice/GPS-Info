@@ -29,6 +29,13 @@
     <string name="constellation_all">All</string>
     <string name="filter_usable">Usable</string>
     <string name="sat_used_in_fix">Used in fix</string>
+    <string name="label_elev">Elevation</string>
+    <string name="label_azim">Azimuth</string>
+    <string name="label_freq">Frequency</string>
+    <string name="label_cn0">CN0</string>
+    <string name="label_baseband_cn0">Baseband CN0</string>
+    <string name="label_almanac">Almanac</string>
+    <string name="label_ephemeris">Ephemeris</string>
 
     <string name="profile_title">Device</string>
     <string name="settings_title">Settings</string>
