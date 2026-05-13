@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -40,6 +41,7 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     var filterStatus by remember { mutableStateOf(SatelliteFilterStatus.ALL) }
     var filterMenuExpanded by remember { mutableStateOf(false) }
     var skyViewExpanded by remember { mutableStateOf(false) }
+    var isCompassEnabled by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val filteredSatellites = remember(state.satellites, filterConstellation, filterStatus, context) {
@@ -137,12 +139,26 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                                 fontWeight = FontWeight.Bold
                             )
                         }
-                        Icon(
-                            imageVector = if (skyViewExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(
+                                onClick = { isCompassEnabled = !isCompassEnabled },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (isCompassEnabled) Icons.Default.Explore else Icons.Default.ExploreOff,
+                                    contentDescription = stringResource(if (isCompassEnabled) R.string.compass_rotate else R.string.compass_north_up),
+                                    modifier = Modifier.size(18.dp),
+                                    tint = if (isCompassEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                imageVector = if (skyViewExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            )
+                        }
                     }
                     AnimatedVisibility(
                         visible = skyViewExpanded,
@@ -151,6 +167,8 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                     ) {
                         SkyView(
                             satellites = filteredSatellites,
+                            azimuth = state.azimuth,
+                            rotateWithCompass = isCompassEnabled,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .aspectRatio(1f)

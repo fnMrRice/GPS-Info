@@ -32,6 +32,8 @@
     <string name="filter_all">All</string>
     <string name="sat_used_in_fix">Used in fix</string>
     <string name="sat_not_used">Not used</string>
+    <string name="compass_north_up">Fixed North Up</string>
+    <string name="compass_rotate">Rotate with Compass</string>
     <string name="label_elev">Elevation</string>
     <string name="label_azim">Azimuth</string>
     <string name="label_freq">Frequency</string>

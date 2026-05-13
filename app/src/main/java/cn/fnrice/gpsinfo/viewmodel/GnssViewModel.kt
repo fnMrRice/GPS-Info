@@ -2,6 +2,10 @@ package cn.fnrice.gpsinfo.viewmodel
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.location.GnssStatus
 import android.location.Location
 import android.location.LocationListener
@@ -66,6 +70,9 @@ class GnssViewModel : ViewModel() {
     private var locationManager: LocationManager? = null
     private var gnssCallback: GnssStatus.Callback? = null
     private var locationListener: LocationListener? = null
+    private var sensorManager: SensorManager? = null
+    private var rotationSensor: Sensor? = null
+    private var sensorListener: SensorEventListener? = null
 
     fun initSettings(context: Context) {
         if (settingsRepository == null) {
@@ -168,10 +175,32 @@ class GnssViewModel : ViewModel() {
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         locationManager = lm
 
+        val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        this.sensorManager = sensorManager
+        rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+            ?: sensorManager.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)
+
         val isGpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
         _state.value = _state.value.copy(isLocationEnabled = isGpsEnabled)
 
         if (!isGpsEnabled || !_state.value.hasPermission) return
+
+        sensorListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                if (event.sensor.type == Sensor.TYPE_ROTATION_VECTOR || event.sensor.type == Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR) {
+                    val rotationMatrix = FloatArray(9)
+                    SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+                    val orientation = FloatArray(3)
+                    SensorManager.getOrientation(rotationMatrix, orientation)
+                    val azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
+                    _state.value = _state.value.copy(azimuth = azimuth)
+                }
+            }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+        }
+        rotationSensor?.let {
+            sensorManager.registerListener(sensorListener, it, SensorManager.SENSOR_DELAY_UI)
+        }
 
         val callback = object : GnssStatus.Callback() {
             override fun onSatelliteStatusChanged(status: GnssStatus) {
@@ -240,9 +269,13 @@ class GnssViewModel : ViewModel() {
     fun stopGnss() {
         gnssCallback?.let { locationManager?.unregisterGnssStatusCallback(it) }
         locationListener?.let { locationManager?.removeUpdates(it) }
+        sensorListener?.let { sensorManager?.unregisterListener(it) }
         gnssCallback = null
         locationListener = null
         locationManager = null
+        sensorListener = null
+        sensorManager = null
+        rotationSensor = null
     }
 
     fun saveSnapshot(label: String = "") {

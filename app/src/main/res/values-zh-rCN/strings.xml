@@ -32,6 +32,8 @@
     <string name="filter_all">全部</string>
     <string name="sat_used_in_fix">已参与定位</string>
     <string name="sat_not_used">未使用</string>
+    <string name="compass_north_up">固定北向上</string>
+    <string name="compass_rotate">随指南针旋转</string>
     <string name="label_elev">仰角</string>
     <string name="label_azim">方位角</string>
     <string name="label_freq">频率</string>

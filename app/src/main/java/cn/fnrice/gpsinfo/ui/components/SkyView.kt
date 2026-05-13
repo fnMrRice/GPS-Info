@@ -13,20 +13,29 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalContext
 import cn.fnrice.gpsinfo.data.SatelliteInfo
 import kotlin.math.cos
 import kotlin.math.sin
 
 @Composable
-fun SkyView(satellites: List<SatelliteInfo>, modifier: Modifier = Modifier) {
+fun SkyView(
+    satellites: List<SatelliteInfo>,
+    azimuth: Float,
+    rotateWithCompass: Boolean,
+    modifier: Modifier = Modifier
+) {
     val context = LocalContext.current
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center,
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            drawSkyPlot(satellites, size.minDimension, context)
+            val rotation = if (rotateWithCompass) -azimuth else 0f
+            rotate(rotation) {
+                drawSkyPlot(satellites, size.minDimension, context)
+            }
         }
     }
 }

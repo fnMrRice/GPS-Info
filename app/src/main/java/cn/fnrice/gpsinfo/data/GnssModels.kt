@@ -71,6 +71,7 @@ data class GnssState(
     val satellitesTotal: Int = 0,
     val isLocationEnabled: Boolean = false,
     val hasPermission: Boolean = false,
+    val azimuth: Float = 0f,
 )
 
 data class SatelliteSnapshot(
