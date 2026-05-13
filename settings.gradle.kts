@@ -19,6 +19,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://maven.aliyun.com/repository/public") }
+        maven { url = uri("https://jitpack.io") }
+        // 高德地图仓库
+        maven { url = uri("https://amap-sdk.oss-cn-hangzhou.aliyuncs.com/maven") }
     }
 }
 
