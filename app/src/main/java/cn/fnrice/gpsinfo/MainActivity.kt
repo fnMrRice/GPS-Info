@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -46,6 +47,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import cn.fnrice.gpsinfo.ui.components.ToastUtils
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -88,9 +90,31 @@ enum class AppDestinations(
 @Composable
 fun GPSInfoApp() {
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.SATELLITES) }
+    var lastBackPressTime by rememberSaveable { mutableStateOf(0L) }
     val viewModel: GnssViewModel = viewModel()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val backExitText = stringResource(R.string.press_back_again_to_exit)
+
+    BackHandler {
+        when (currentDestination) {
+            AppDestinations.SETTINGS -> {
+                currentDestination = AppDestinations.DEVICE
+            }
+            AppDestinations.SATELLITES -> {
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - lastBackPressTime < 2000) {
+                    (context as? ComponentActivity)?.finish()
+                } else {
+                    lastBackPressTime = currentTime
+                    ToastUtils.showToast(context, backExitText)
+                }
+            }
+            else -> {
+                currentDestination = AppDestinations.SATELLITES
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.initSettings(context)
