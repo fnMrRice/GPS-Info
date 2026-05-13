@@ -19,9 +19,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.SatelliteAlt
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
@@ -81,9 +81,9 @@ enum class AppDestinations(
     val label: Int,
     val icon: ImageVector,
 ) {
-    SATELLITES(R.string.nav_home, Icons.Default.Home),
-    MAP(R.string.nav_map, Icons.Default.SatelliteAlt),
-    DEVICE(R.string.nav_profile, Icons.Default.Person),
+    SATELLITES(R.string.nav_home, Icons.Default.SatelliteAlt),
+    MAP(R.string.nav_map, Icons.Default.Map),
+    DEVICE(R.string.nav_profile, Icons.Default.Devices),
     SETTINGS(R.string.settings_title, Icons.Default.Settings),
 }
 
@@ -97,12 +97,9 @@ fun GPSInfoApp() {
     val backExitText = stringResource(R.string.press_back_again_to_exit)
 
     BackHandler {
+        val currentTime = System.currentTimeMillis()
         when (currentDestination) {
-            AppDestinations.SETTINGS -> {
-                currentDestination = AppDestinations.DEVICE
-            }
             AppDestinations.SATELLITES -> {
-                val currentTime = System.currentTimeMillis()
                 if (currentTime - lastBackPressTime < 2000) {
                     (context as? ComponentActivity)?.finish()
                 } else {
@@ -110,8 +107,13 @@ fun GPSInfoApp() {
                     ToastUtils.showToast(context, backExitText)
                 }
             }
+            AppDestinations.SETTINGS -> {
+                currentDestination = AppDestinations.DEVICE
+            }
             else -> {
                 currentDestination = AppDestinations.SATELLITES
+                lastBackPressTime = currentTime
+                ToastUtils.showToast(context, backExitText)
             }
         }
     }
@@ -251,3 +253,4 @@ private fun PermissionRequestScreen(
         }
     }
 }
+  

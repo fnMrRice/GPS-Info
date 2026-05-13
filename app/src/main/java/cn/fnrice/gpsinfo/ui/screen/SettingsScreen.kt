@@ -14,8 +14,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -25,9 +30,14 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import cn.fnrice.gpsinfo.ui.components.AppCard
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -59,6 +69,7 @@ fun SettingsScreen(viewModel: GnssViewModel, onBack: () -> Unit) {
     val useCustomAmapKey by viewModel.useCustomAmapKey.collectAsState()
     val useCustomBaiduKey by viewModel.useCustomBaiduKey.collectAsState()
     val isDeveloperMode by viewModel.isDeveloperMode.collectAsState()
+    var showLogDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -86,24 +97,104 @@ fun SettingsScreen(viewModel: GnssViewModel, onBack: () -> Unit) {
             )
 
             if (isDeveloperMode) {
-                ApiKeysCard(
-                    viewModel = viewModel,
-                    googleApiKey = googleApiKey,
-                    onGoogleApiKeyChange = { viewModel.setGoogleApiKey(it) },
-                    amapApiKey = amapApiKey,
-                    onAmapApiKeyChange = { viewModel.setAmapApiKey(it) },
-                    baiduApiKey = baiduApiKey,
-                    onBaiduApiKeyChange = { viewModel.setBaiduApiKey(it) },
-                    useCustomGoogleKey = useCustomGoogleKey,
-                    onUseCustomGoogleKeyChange = { viewModel.setUseCustomGoogleKey(it) },
-                    useCustomAmapKey = useCustomAmapKey,
-                    onUseCustomAmapKeyChange = { viewModel.setUseCustomAmapKey(it) },
-                    useCustomBaiduKey = useCustomBaiduKey,
-                    onUseCustomBaiduKeyChange = { viewModel.setUseCustomBaiduKey(it) }
-                )
+                AppCard(
+                    title = stringResource(R.string.developer_options),
+                    icon = Icons.Default.BugReport
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        ApiKeysCard(
+                            viewModel = viewModel,
+                            googleApiKey = googleApiKey,
+                            onGoogleApiKeyChange = { viewModel.setGoogleApiKey(it) },
+                            amapApiKey = amapApiKey,
+                            onAmapApiKeyChange = { viewModel.setAmapApiKey(it) },
+                            baiduApiKey = baiduApiKey,
+                            onBaiduApiKeyChange = { viewModel.setBaiduApiKey(it) },
+                            useCustomGoogleKey = useCustomGoogleKey,
+                            onUseCustomGoogleKeyChange = { viewModel.setUseCustomGoogleKey(it) },
+                            useCustomAmapKey = useCustomAmapKey,
+                            onUseCustomAmapKeyChange = { viewModel.setUseCustomAmapKey(it) },
+                            useCustomBaiduKey = useCustomBaiduKey,
+                            onUseCustomBaiduKeyChange = { viewModel.setUseCustomBaiduKey(it) }
+                        )
+                        
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                        
+                        Button(
+                            onClick = { showLogDialog = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.label_view_logs))
+                        }
+                    }
+                }
             }
             
             Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        if (showLogDialog) {
+            LogViewDialog(viewModel = viewModel, onDismiss = { showLogDialog = false })
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LogViewDialog(viewModel: GnssViewModel, onDismiss: () -> Unit) {
+    val logs by viewModel.logs.collectAsState()
+    
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.surface
+        ) {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text(stringResource(R.string.logs_title)) },
+                        navigationIcon = {
+                            IconButton(onClick = onDismiss) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                            }
+                        }
+                    )
+                }
+            ) { innerPadding ->
+                if (logs.isEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(stringResource(R.string.logs_empty), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        items(logs) { log ->
+                            Text(
+                                text = log,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -214,43 +305,19 @@ private fun ApiKeyItem(
     defaultKey: String,
     onTestClick: suspend () -> Boolean
 ) {
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var isTesting by remember { mutableStateOf(false) }
-
-    Column(modifier = Modifier.fillMaxWidth()) {
+    val context = LocalContext.current
+    val testSuccess = stringResource(R.string.test_api_success)
+    val testFail = stringResource(R.string.test_api_fail)
+    
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(
-                    onClick = {
-                        isTesting = true
-                        scope.launch {
-                            val success = onTestClick()
-                            isTesting = false
-                            val resId = if (success) {
-                                R.string.test_api_success
-                            } else {
-                                R.string.test_api_fail
-                            }
-                            ToastUtils.showToast(context, resId)
-                        }
-                    },
-                    enabled = !isTesting,
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                    modifier = Modifier.height(32.dp)
-                ) {
-                    Text(stringResource(R.string.test_api), style = MaterialTheme.typography.labelMedium)
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(stringResource(R.string.use_custom_key), style = MaterialTheme.typography.labelMedium)
-                    Switch(checked = useCustom, onCheckedChange = onUseCustomChange)
-                }
-            }
+            Switch(checked = useCustom, onCheckedChange = onUseCustomChange)
         }
         
         if (useCustom) {
@@ -258,20 +325,30 @@ private fun ApiKeyItem(
                 value = apiKey,
                 onValueChange = onApiKeyChange,
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.api_keys)) },
+                label = { Text(stringResource(R.string.use_custom_key)) },
                 singleLine = true
             )
         } else {
-            val displayKey = if (defaultKey.length > 8) {
-                defaultKey.take(4) + "..." + defaultKey.takeLast(4)
-            } else {
-                "********"
-            }
             Text(
-                text = "Default: $displayKey",
+                text = "Key: ${if (defaultKey.isNotEmpty()) "****${defaultKey.takeLast(4)}" else "Not set"}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+
+        OutlinedButton(
+            onClick = {
+                scope.launch {
+                    val result = onTestClick()
+                    ToastUtils.showToast(
+                        context,
+                        if (result) testSuccess else testFail
+                    )
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.test_api))
         }
     }
 }

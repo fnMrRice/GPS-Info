@@ -13,6 +13,7 @@ import android.location.LocationManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import cn.fnrice.gpsinfo.data.GnssState
 import cn.fnrice.gpsinfo.data.LocationInfo
@@ -67,6 +68,16 @@ class GnssViewModel : ViewModel() {
 
     private val _isDeveloperMode = MutableStateFlow(false)
     val isDeveloperMode: StateFlow<Boolean> = _isDeveloperMode.asStateFlow()
+
+    private val _logs = MutableStateFlow<List<String>>(emptyList())
+    val logs: StateFlow<List<String>> = _logs.asStateFlow()
+
+    private fun addLog(msg: String) {
+        val timestamp = java.text.SimpleDateFormat("HH:mm:ss.SSS", java.util.Locale.getDefault()).format(java.util.Date())
+        val logEntry = "[$timestamp] $msg"
+        Log.d("GnssViewModel", logEntry)
+        _logs.value = (listOf(logEntry) + _logs.value).take(500) // Keep last 500 logs, newest first
+    }
 
     private var settingsRepository: SettingsRepository? = null
 
@@ -185,13 +196,16 @@ class GnssViewModel : ViewModel() {
             MapProvider.BAIDU -> "api.map.baidu.com"
             else -> return false
         }
+        addLog("Testing API Key for $provider (host: $host)")
         return withContext(Dispatchers.IO) {
             try {
                 Socket().use { socket ->
                     socket.connect(InetSocketAddress(host, 80), 3000)
+                    addLog("API test success: $provider")
                     true
                 }
             } catch (e: Exception) {
+                addLog("API test failed: $provider, error: ${e.message}")
                 false
             }
         }
@@ -203,7 +217,11 @@ class GnssViewModel : ViewModel() {
 
     @SuppressLint("MissingPermission")
     fun startGnss(context: Context) {
-        if (gnssCallback != null) return // Already started
+        addLog("startGnss called")
+        if (gnssCallback != null) {
+            addLog("GNSS already started, ignoring")
+            return
+        }
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         locationManager = lm
 
@@ -213,6 +231,7 @@ class GnssViewModel : ViewModel() {
             ?: sensorManager.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)
 
         val isGpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        addLog("GPS Enabled: $isGpsEnabled, Permission: ${_state.value.hasPermission}")
         _state.value = _state.value.copy(isLocationEnabled = isGpsEnabled)
 
         if (!isGpsEnabled || !_state.value.hasPermission) return
@@ -281,6 +300,7 @@ class GnssViewModel : ViewModel() {
 
         val listener = object : LocationListener {
             override fun onLocationChanged(location: Location) {
+                addLog("Location changed: ${location.provider}, accuracy: ${location.accuracy}m")
                 _state.value = _state.value.copy(
                     location = LocationInfo.fromLocation(location)
                 )
@@ -299,7 +319,11 @@ class GnssViewModel : ViewModel() {
     }
 
     fun stopGnss() {
-        if (gnssCallback == null) return // Already stopped
+        addLog("stopGnss called")
+        if (gnssCallback == null) {
+            addLog("GNSS already stopped, ignoring")
+            return
+        }
         gnssCallback?.let { locationManager?.unregisterGnssStatusCallback(it) }
         locationListener?.let { locationManager?.removeUpdates(it) }
         sensorListener?.let { sensorManager?.unregisterListener(it) }
@@ -368,7 +392,7 @@ data class GnssCapabilitiesInfo(
     val hasMeasurements: Boolean,
     val hasAntennaInfo: Boolean,
     val hasMeasurementCorrections: Boolean,
-    val hasMeasurementCorrelationVectors: Boolean,
+    val hasMeasurementCorrelationVectors: Boolean
 )
 
 data class SensorCapabilitiesInfo(
@@ -381,4 +405,3 @@ data class SensorCapabilitiesInfo(
     val hasRotationVector: Boolean,
     val hasGravity: Boolean
 )
-       

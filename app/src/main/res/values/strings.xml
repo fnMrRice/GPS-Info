@@ -93,4 +93,8 @@
     <string name="constellation_sbas">SBAS</string>
     <string name="constellation_unknown">Unknown</string>
     <string name="press_back_again_to_exit">Press back again to exit</string>
+    <string name="label_view_logs">View Logs</string>
+    <string name="logs_title">System Logs</string>
+    <string name="logs_empty">No logs yet</string>
+    <string name="logs_clear">Clear Logs</string>
 </resources>

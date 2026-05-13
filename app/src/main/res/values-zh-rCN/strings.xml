@@ -93,4 +93,8 @@
     <string name="constellation_sbas">SBAS</string>
     <string name="constellation_unknown">未知</string>
     <string name="press_back_again_to_exit">再按一次退出</string>
+    <string name="label_view_logs">查看日志</string>
+    <string name="logs_title">系统日志</string>
+    <string name="logs_empty">暂无日志</string>
+    <string name="logs_clear">清除日志</string>
 </resources>
