@@ -13,11 +13,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,9 +39,11 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cn.fnrice.gpsinfo.R
 import cn.fnrice.gpsinfo.data.GnssState
 import cn.fnrice.gpsinfo.data.SatelliteInfo
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
@@ -60,6 +67,8 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     val actualMapProvider by viewModel.actualMapProvider.collectAsState()
 
     var filterConstellation by remember { mutableStateOf<String?>(null) }
+    var skyViewExpanded by remember { mutableStateOf(false) }
+
     val filteredSatellites = state.satellites.filter {
         filterConstellation == null || it.constellationName == filterConstellation
     }
@@ -84,12 +93,39 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
         }
 
         item {
-            SkyView(
-                satellites = filteredSatellites,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-            )
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            stringResource(R.string.sky_view_title),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                        IconButton(onClick = { skyViewExpanded = !skyViewExpanded }) {
+                            Icon(
+                                imageVector = if (skyViewExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                contentDescription = null
+                            )
+                        }
+                    }
+                    if (skyViewExpanded) {
+                        SkyView(
+                            satellites = filteredSatellites,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .padding(8.dp)
+                        )
+                    }
+                }
+            }
         }
 
         if (constellations.isNotEmpty()) {
@@ -101,7 +137,7 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                     FilterChip(
                         selected = filterConstellation == null,
                         onClick = { filterConstellation = null },
-                        label = { Text("All") },
+                        label = { Text(stringResource(R.string.constellation_all)) },
                     )
                     constellations.forEach { name ->
                         FilterChip(
@@ -128,10 +164,10 @@ private fun StatusHeader(state: GnssState, mapProvider: cn.fnrice.gpsinfo.data.M
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text("Satellites", style = MaterialTheme.typography.headlineSmall)
+            Text(stringResource(R.string.status_satellites), style = MaterialTheme.typography.headlineSmall)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    "${state.satellitesUsedInFix} used / ${state.satellitesTotal} visible",
+                    stringResource(R.string.status_used_visible, state.satellitesUsedInFix, state.satellitesTotal),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -152,7 +188,7 @@ private fun StatusHeader(state: GnssState, mapProvider: cn.fnrice.gpsinfo.data.M
         if (!state.isLocationEnabled) {
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
                 Text(
-                    "GPS Disabled",
+                    stringResource(R.string.status_gps_disabled),
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                     color = MaterialTheme.colorScheme.onErrorContainer,
                     style = MaterialTheme.typography.labelLarge,
@@ -167,30 +203,30 @@ private fun LocationCard(state: GnssState) {
     val loc = state.location ?: return
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Text("Location", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.card_location), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Lat", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.label_lat), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text("%.6f".format(loc.latitude), fontWeight = FontWeight.Medium)
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Lon", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.label_lon), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text("%.6f".format(loc.longitude), fontWeight = FontWeight.Medium)
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Alt", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.label_alt), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text("%.1f m".format(loc.altitude), fontWeight = FontWeight.Medium)
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Accuracy", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.label_accuracy), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text("%.1f m".format(loc.accuracy), fontWeight = FontWeight.Medium)
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Speed", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.label_speed), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text("%.1f m/s".format(loc.speed), fontWeight = FontWeight.Medium)
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Bearing", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.label_bearing), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text("%.1f°".format(loc.bearing), fontWeight = FontWeight.Medium)
             }
         }
@@ -199,16 +235,12 @@ private fun LocationCard(state: GnssState) {
 
 @Composable
 private fun SkyView(satellites: List<SatelliteInfo>, modifier: Modifier = Modifier) {
-    Card(modifier = modifier) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                drawSkyPlot(satellites, size.minDimension)
-            }
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawSkyPlot(satellites, size.minDimension)
         }
     }
 }
@@ -297,7 +329,7 @@ private fun SatelliteCard(sat: SatelliteInfo) {
                         fontWeight = FontWeight.Bold,
                     )
                     if (sat.usedInFix) {
-                        Text("Used in fix", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                        Text(stringResource(R.string.sat_used_in_fix), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }

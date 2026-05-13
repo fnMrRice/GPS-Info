@@ -1,0 +1,53 @@
+<resources>
+    <string name="app_name">GPS信息</string>
+    <string name="nav_home">卫星</string>
+    <string name="nav_map">地图</string>
+    <string name="nav_profile">设备</string>
+    
+    <string name="permission_required_title">需要定位权限</string>
+    <string name="permission_required_desc">GPS信息需要定位权限来读取卫星数据。</string>
+    <string name="grant_permission">授予权限</string>
+    <string name="open_settings">打开设置</string>
+    
+    <string name="status_satellites">卫星</string>
+    <string name="status_used_visible">%1$d 已使用 / %2$d 可见</string>
+    <string name="status_gps_disabled">GPS 已禁用</string>
+    
+    <string name="card_location">位置</string>
+    <string name="label_lat">纬度</string>
+    <string name="label_lon">经度</string>
+    <string name="label_alt">海拔</string>
+    <string name="label_accuracy">精度</string>
+    <string name="label_speed">速度</string>
+    <string name="label_bearing">方位角</string>
+    
+    <string name="sky_view_title">星图</string>
+    <string name="constellation_all">全部</string>
+    <string name="sat_used_in_fix">已参与定位</string>
+    
+    <string name="profile_title">设备</string>
+    <string name="settings_title">设置</string>
+    <string name="map_settings">地图供应商</string>
+    <string name="api_keys">API 密钥</string>
+    <string name="use_custom_key">使用自定义密钥</string>
+    <string name="device_info">设备信息</string>
+    <string name="gnss_capabilities">GNSS 功能</string>
+    <string name="gnss_android_version_required">GNSS 功能需要 Android 12+</string>
+    <string name="map_provider_auto">自动</string>
+    <string name="map_provider_google">Google</string>
+    <string name="map_provider_amap">高德</string>
+    <string name="map_provider_baidu">百度</string>
+    <string name="map_integration_soon">地图集成即将推出...</string>
+    <string name="current_provider">当前提供商: %1$s</string>
+    
+    <string name="label_manufacturer">制造商</string>
+    <string name="label_model">型号</string>
+    <string name="label_android_version">Android版本</string>
+    <string name="label_nav_messages">导航消息</string>
+    <string name="label_measurements">测量值</string>
+    <string name="label_antenna_info">天线信息</string>
+    <string name="label_meas_corrections">测量修正</string>
+    <string name="label_correlation_vectors">相关向量</string>
+    <string name="yes">是</string>
+    <string name="no">否</string>
+</resources>

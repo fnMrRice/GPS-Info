@@ -1,6 +1,7 @@
 package cn.fnrice.gpsinfo.data
 
 import android.content.Context
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -21,6 +22,9 @@ class SettingsRepository(private val context: Context) {
     private val GOOGLE_API_KEY = stringPreferencesKey("google_api_key")
     private val AMAP_API_KEY = stringPreferencesKey("amap_api_key")
     private val BAIDU_API_KEY = stringPreferencesKey("baidu_api_key")
+    private val USE_CUSTOM_GOOGLE_KEY = booleanPreferencesKey("use_custom_google_key")
+    private val USE_CUSTOM_AMAP_KEY = booleanPreferencesKey("use_custom_amap_key")
+    private val USE_CUSTOM_BAIDU_KEY = booleanPreferencesKey("use_custom_baidu_key")
 
     val mapProviderFlow: Flow<MapProvider> = context.dataStore.data
         .map { preferences ->
@@ -40,6 +44,15 @@ class SettingsRepository(private val context: Context) {
 
     val baiduApiKeyFlow: Flow<String> = context.dataStore.data
         .map { preferences -> preferences[BAIDU_API_KEY] ?: "" }
+
+    val useCustomGoogleKeyFlow: Flow<Boolean> = context.dataStore.data
+        .map { preferences -> preferences[USE_CUSTOM_GOOGLE_KEY] ?: false }
+
+    val useCustomAmapKeyFlow: Flow<Boolean> = context.dataStore.data
+        .map { preferences -> preferences[USE_CUSTOM_AMAP_KEY] ?: false }
+
+    val useCustomBaiduKeyFlow: Flow<Boolean> = context.dataStore.data
+        .map { preferences -> preferences[USE_CUSTOM_BAIDU_KEY] ?: false }
 
     suspend fun setMapProvider(provider: MapProvider) {
         context.dataStore.edit { preferences ->
@@ -62,6 +75,24 @@ class SettingsRepository(private val context: Context) {
     suspend fun setBaiduApiKey(key: String) {
         context.dataStore.edit { preferences ->
             preferences[BAIDU_API_KEY] = key
+        }
+    }
+
+    suspend fun setUseCustomGoogleKey(use: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[USE_CUSTOM_GOOGLE_KEY] = use
+        }
+    }
+
+    suspend fun setUseCustomAmapKey(use: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[USE_CUSTOM_AMAP_KEY] = use
+        }
+    }
+
+    suspend fun setUseCustomBaiduKey(use: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[USE_CUSTOM_BAIDU_KEY] = use
         }
     }
 }

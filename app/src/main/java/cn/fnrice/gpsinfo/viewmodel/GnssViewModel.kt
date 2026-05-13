@@ -52,6 +52,15 @@ class GnssViewModel : ViewModel() {
     private val _baiduApiKey = MutableStateFlow("")
     val baiduApiKey: StateFlow<String> = _baiduApiKey.asStateFlow()
 
+    private val _useCustomGoogleKey = MutableStateFlow(false)
+    val useCustomGoogleKey: StateFlow<Boolean> = _useCustomGoogleKey.asStateFlow()
+
+    private val _useCustomAmapKey = MutableStateFlow(false)
+    val useCustomAmapKey: StateFlow<Boolean> = _useCustomAmapKey.asStateFlow()
+
+    private val _useCustomBaiduKey = MutableStateFlow(false)
+    val useCustomBaiduKey: StateFlow<Boolean> = _useCustomBaiduKey.asStateFlow()
+
     private var settingsRepository: SettingsRepository? = null
 
     private var locationManager: LocationManager? = null
@@ -76,6 +85,15 @@ class GnssViewModel : ViewModel() {
             }
             viewModelScope.launch {
                 repo.baiduApiKeyFlow.collect { _baiduApiKey.value = it }
+            }
+            viewModelScope.launch {
+                repo.useCustomGoogleKeyFlow.collect { _useCustomGoogleKey.value = it }
+            }
+            viewModelScope.launch {
+                repo.useCustomAmapKeyFlow.collect { _useCustomAmapKey.value = it }
+            }
+            viewModelScope.launch {
+                repo.useCustomBaiduKeyFlow.collect { _useCustomBaiduKey.value = it }
             }
         }
     }
@@ -120,6 +138,24 @@ class GnssViewModel : ViewModel() {
     fun setBaiduApiKey(key: String) {
         viewModelScope.launch {
             settingsRepository?.setBaiduApiKey(key)
+        }
+    }
+
+    fun setUseCustomGoogleKey(use: Boolean) {
+        viewModelScope.launch {
+            settingsRepository?.setUseCustomGoogleKey(use)
+        }
+    }
+
+    fun setUseCustomAmapKey(use: Boolean) {
+        viewModelScope.launch {
+            settingsRepository?.setUseCustomAmapKey(use)
+        }
+    }
+
+    fun setUseCustomBaiduKey(use: Boolean) {
+        viewModelScope.launch {
+            settingsRepository?.setUseCustomBaiduKey(use)
         }
     }
 

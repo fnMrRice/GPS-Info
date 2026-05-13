@@ -16,6 +16,14 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val googleApiKey = project.findProperty("GOOGLE_MAPS_KEY") ?: ""
+        val amapApiKey = project.findProperty("AMAP_KEY") ?: ""
+        val baiduApiKey = project.findProperty("BAIDU_MAPS_KEY") ?: ""
+
+        buildConfigField("String", "GOOGLE_MAPS_KEY", "\"$googleApiKey\"")
+        buildConfigField("String", "AMAP_KEY", "\"$amapApiKey\"")
+        buildConfigField("String", "BAIDU_MAPS_KEY", "\"$baiduApiKey\"")
     }
 
     buildTypes {
@@ -30,6 +38,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

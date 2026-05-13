@@ -1,3 +1,53 @@
 <resources>
     <string name="app_name">GPS Info</string>
+    <string name="nav_home">Satellites</string>
+    <string name="nav_map">Map</string>
+    <string name="nav_profile">Device</string>
+
+    <string name="permission_required_title">Location Permission Required</string>
+    <string name="permission_required_desc">GPS Info needs location access to read satellite data.</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="open_settings">Open Settings</string>
+
+    <string name="status_satellites">Satellites</string>
+    <string name="status_used_visible">%1$d used / %2$d visible</string>
+    <string name="status_gps_disabled">GPS Disabled</string>
+
+    <string name="card_location">Location</string>
+    <string name="label_lat">Lat</string>
+    <string name="label_lon">Lon</string>
+    <string name="label_alt">Alt</string>
+    <string name="label_accuracy">Accuracy</string>
+    <string name="label_speed">Speed</string>
+    <string name="label_bearing">Bearing</string>
+
+    <string name="sky_view_title">Sky Plot</string>
+    <string name="constellation_all">All</string>
+    <string name="sat_used_in_fix">Used in fix</string>
+
+    <string name="profile_title">Device</string>
+    <string name="settings_title">Settings</string>
+    <string name="map_settings">Map Provider</string>
+    <string name="api_keys">API Keys</string>
+    <string name="use_custom_key">Use Custom API Key</string>
+    <string name="device_info">Device Info</string>
+    <string name="gnss_capabilities">GNSS Capabilities</string>
+    <string name="gnss_android_version_required">GNSS capabilities require Android 12+</string>
+    <string name="map_provider_auto">Auto</string>
+    <string name="map_provider_google">Google</string>
+    <string name="map_provider_amap">AMAP</string>
+    <string name="map_provider_baidu">Baidu</string>
+    <string name="map_integration_soon">Map integration coming soon...</string>
+    <string name="current_provider">Current Provider: %1$s</string>
+
+    <string name="label_manufacturer">Manufacturer</string>
+    <string name="label_model">Model</string>
+    <string name="label_android_version">Android Version</string>
+    <string name="label_nav_messages">Navigation Messages</string>
+    <string name="label_measurements">Measurements</string>
+    <string name="label_antenna_info">Antenna Info</string>
+    <string name="label_meas_corrections">Measurement Corrections</string>
+    <string name="label_correlation_vectors">Correlation Vectors</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>

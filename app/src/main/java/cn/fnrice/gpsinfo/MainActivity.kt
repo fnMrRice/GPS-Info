@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SatelliteAlt
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,12 +39,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cn.fnrice.gpsinfo.ui.screen.FavoritesScreen
 import cn.fnrice.gpsinfo.ui.screen.HomeScreen
-import cn.fnrice.gpsinfo.ui.screen.ProfileScreen
+import cn.fnrice.gpsinfo.ui.screen.MapScreen
+import cn.fnrice.gpsinfo.ui.screen.DeviceScreen
+import cn.fnrice.gpsinfo.ui.screen.SettingsScreen
 import cn.fnrice.gpsinfo.ui.theme.GPSInfoTheme
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
 
@@ -59,17 +62,18 @@ class MainActivity : ComponentActivity() {
 }
 
 enum class AppDestinations(
-    val label: String,
+    val label: Int,
     val icon: ImageVector,
 ) {
-    HOME("Home", Icons.Default.Home),
-    FAVORITES("Favorites", Icons.Default.Favorite),
-    PROFILE("Profile", Icons.Default.Person),
+    SATELLITES(R.string.nav_home, Icons.Default.Home),
+    MAP(R.string.nav_map, Icons.Default.SatelliteAlt),
+    DEVICE(R.string.nav_profile, Icons.Default.Person),
+    SETTINGS(R.string.settings_title, Icons.Default.Settings),
 }
 
 @Composable
 fun GPSInfoApp() {
-    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
+    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.SATELLITES) }
     val viewModel: GnssViewModel = viewModel()
     val context = LocalContext.current
 
@@ -104,10 +108,10 @@ fun GPSInfoApp() {
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
-            AppDestinations.entries.forEach { destination ->
+            AppDestinations.entries.filter { it != AppDestinations.SETTINGS }.forEach { destination ->
                 item(
-                    icon = { Icon(destination.icon, contentDescription = destination.label) },
-                    label = { Text(destination.label) },
+                    icon = { Icon(destination.icon, contentDescription = stringResource(destination.label)) },
+                    label = { Text(stringResource(destination.label)) },
                     selected = destination == currentDestination,
                     onClick = { currentDestination = destination },
                 )
@@ -135,9 +139,14 @@ fun GPSInfoApp() {
                 )
             } else {
                 when (currentDestination) {
-                    AppDestinations.HOME -> HomeScreen(viewModel, innerPadding)
-                    AppDestinations.FAVORITES -> FavoritesScreen(viewModel, innerPadding)
-                    AppDestinations.PROFILE -> ProfileScreen(viewModel, innerPadding)
+                    AppDestinations.SATELLITES -> HomeScreen(viewModel, innerPadding)
+                    AppDestinations.MAP -> MapScreen(viewModel, innerPadding)
+                    AppDestinations.DEVICE -> DeviceScreen(viewModel, innerPadding, onNavigateToSettings = {
+                        currentDestination = AppDestinations.SETTINGS
+                    })
+                    AppDestinations.SETTINGS -> SettingsScreen(viewModel, onBack = {
+                        currentDestination = AppDestinations.DEVICE
+                    })
                 }
             }
         }
@@ -162,22 +171,22 @@ private fun PermissionRequestScreen(
         )
         Spacer(Modifier.height(16.dp))
         Text(
-            "Location Permission Required",
+            stringResource(R.string.permission_required_title),
             style = MaterialTheme.typography.titleLarge,
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            "GPS Info needs location access to read satellite data.",
+            stringResource(R.string.permission_required_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(24.dp))
         Button(onClick = onRequestPermission) {
-            Text("Grant Permission")
+            Text(stringResource(R.string.grant_permission))
         }
         Spacer(Modifier.height(8.dp))
         Button(onClick = onOpenSettings) {
-            Text("Open Settings")
+            Text(stringResource(R.string.open_settings))
         }
     }
 }
