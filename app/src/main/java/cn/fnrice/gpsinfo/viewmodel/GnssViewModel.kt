@@ -219,11 +219,10 @@ class GnssViewModel : ViewModel() {
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     fun startGnss(context: Context) {
         val startTime = System.currentTimeMillis()
-        addLog("startGnss called")
         if (gnssCallback != null) {
-            addLog("GNSS already started, ignoring")
             return
         }
+        addLog("startGnss called")
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         locationManager = lm
 
@@ -247,10 +246,18 @@ class GnssViewModel : ViewModel() {
             ?: sensorManager.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)
 
         val isGpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        addLog("GPS Enabled: $isGpsEnabled, Permission: ${_state.value.hasPermission}")
+        val hasPermission = _state.value.hasPermission
+        addLog("GPS Enabled: $isGpsEnabled, Permission: $hasPermission")
         _state.value = _state.value.copy(isLocationEnabled = isGpsEnabled)
 
-        if (!isGpsEnabled || !_state.value.hasPermission) return
+        if (!isGpsEnabled) {
+            addLog("startGnss aborted: GPS is disabled")
+            return
+        }
+        if (!hasPermission) {
+            addLog("startGnss aborted: Location permission not granted")
+            return
+        }
 
         sensorListener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
@@ -272,6 +279,9 @@ class GnssViewModel : ViewModel() {
         var firstSatelliteStatusReceived = false
         val callback = object : GnssStatus.Callback() {
             override fun onSatelliteStatusChanged(status: GnssStatus) {
+                if (status.satelliteCount == 0 && _state.value.satellites.isNotEmpty()) {
+                    addLog("Received empty satellite status (0 satellites)")
+                }
                 if (!firstSatelliteStatusReceived) {
                     val timeTaken = System.currentTimeMillis() - startTime
                     addLog("First GNSS Status received after ${timeTaken}ms. Satellite count: ${status.satelliteCount}")
@@ -321,6 +331,7 @@ class GnssViewModel : ViewModel() {
         }
         gnssCallback = callback
         lm.registerGnssStatusCallback(callback, Handler(Looper.getMainLooper()))
+        addLog("GNSS Status Callback registered")
 
         val listener = object : LocationListener {
             override fun onLocationChanged(location: Location) {
@@ -340,6 +351,7 @@ class GnssViewModel : ViewModel() {
         }
         locationListener = listener
         lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 0f, listener, Looper.getMainLooper())
+        addLog("GPS Location updates requested")
         // Also request from NETWORK_PROVIDER for faster initial location
         try {
             if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {

@@ -142,10 +142,20 @@ fun GPSInfoApp() {
                     viewModel.startGnss(context)
                 }
             } else if (event == Lifecycle.Event.ON_STOP) {
+                // Keep GNSS running in background for a short time if needed,
+                // but usually for a GPS info app, we stop it to save battery.
                 viewModel.stopGnss()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
+        
+        // Also ensure startGnss is called if lifecycle is already started
+        if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            if (hasLocationPermission) {
+                viewModel.startGnss(context)
+            }
+        }
+
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
             viewModel.stopGnss()
