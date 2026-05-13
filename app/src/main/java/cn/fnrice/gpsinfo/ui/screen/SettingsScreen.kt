@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Button
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -41,7 +42,26 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.layout.Box
-import cn.fnrice.gpsinfo.ui.components.AppCard
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.RadioButtonChecked
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -109,12 +129,11 @@ fun SettingsDialog(viewModel: GnssViewModel, onDismiss: () -> Unit) {
                     )
 
                     if (isDeveloperMode) {
-                        AppCard(
+                        SettingsSectionCard(
                             title = stringResource(R.string.developer_options),
                             icon = Icons.Default.BugReport
                         ) {
                             Column(
-                                modifier = Modifier.padding(12.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 ApiKeysCard(
@@ -133,12 +152,22 @@ fun SettingsDialog(viewModel: GnssViewModel, onDismiss: () -> Unit) {
                                     onUseCustomBaiduKeyChange = { viewModel.setUseCustomBaiduKey(it) }
                                 )
 
-                                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                )
 
                                 Button(
                                     onClick = { showLogDialog = true },
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(12.dp)
                                 ) {
+                                    Icon(
+                                        Icons.Default.Settings,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(Modifier.width(8.dp))
                                     Text(stringResource(R.string.label_view_logs))
                                 }
                             }
@@ -245,21 +274,66 @@ fun LogViewDialog(viewModel: GnssViewModel, onDismiss: () -> Unit) {
 }
 
 @Composable
+private fun SettingsSectionCard(
+    title: String,
+    icon: ImageVector,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    OutlinedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp)),
+        shape = RoundedCornerShape(16.dp),
+        border = CardDefaults.outlinedCardBorder().copy(
+            brush = SolidColor(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp).animateContentSize()) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            content()
+        }
+    }
+}
+
+@Composable
 private fun MapSettingsCard(
     currentProvider: MapProvider,
     onProviderSelected: (MapProvider) -> Unit
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(stringResource(R.string.map_settings), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-            
+    SettingsSectionCard(
+        title = stringResource(R.string.map_settings),
+        icon = Icons.Default.Memory
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             MapProvider.entries.forEach { provider ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
                         .clickable { onProviderSelected(provider) }
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = 4.dp, horizontal = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -268,7 +342,7 @@ private fun MapSettingsCard(
                         onClick = { onProviderSelected(provider) }
                     )
                     Text(
-                        when(provider) {
+                        when (provider) {
                             MapProvider.AUTO -> stringResource(R.string.map_provider_auto)
                             MapProvider.GOOGLE -> stringResource(R.string.map_provider_google)
                             MapProvider.AMAP -> stringResource(R.string.map_provider_amap)
@@ -298,45 +372,37 @@ private fun ApiKeysCard(
     useCustomBaiduKey: Boolean,
     onUseCustomBaiduKeyChange: (Boolean) -> Unit,
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(stringResource(R.string.developer_options), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+    val scope = rememberCoroutineScope()
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        ApiKeyItem(
+            label = stringResource(R.string.map_provider_google),
+            apiKey = googleApiKey,
+            onApiKeyChange = onGoogleApiKeyChange,
+            useCustom = useCustomGoogleKey,
+            onUseCustomChange = onUseCustomGoogleKeyChange,
+            defaultKey = DefaultApiKeys.GOOGLE_MAPS_KEY,
+            onTestClick = { viewModel.testApiKey(MapProvider.GOOGLE) }
+        )
 
-            ApiKeyItem(
-                label = stringResource(R.string.map_provider_google),
-                apiKey = googleApiKey,
-                onApiKeyChange = onGoogleApiKeyChange,
-                useCustom = useCustomGoogleKey,
-                onUseCustomChange = onUseCustomGoogleKeyChange,
-                defaultKey = DefaultApiKeys.GOOGLE_MAPS_KEY,
-                onTestClick = { viewModel.testApiKey(MapProvider.GOOGLE) }
-            )
-            
-            Spacer(modifier = Modifier.height(12.dp))
+        ApiKeyItem(
+            label = stringResource(R.string.map_provider_amap),
+            apiKey = amapApiKey,
+            onApiKeyChange = onAmapApiKeyChange,
+            useCustom = useCustomAmapKey,
+            onUseCustomChange = onUseCustomAmapKeyChange,
+            defaultKey = DefaultApiKeys.AMAP_KEY,
+            onTestClick = { viewModel.testApiKey(MapProvider.AMAP) }
+        )
 
-            ApiKeyItem(
-                label = stringResource(R.string.map_provider_amap),
-                apiKey = amapApiKey,
-                onApiKeyChange = onAmapApiKeyChange,
-                useCustom = useCustomAmapKey,
-                onUseCustomChange = onUseCustomAmapKeyChange,
-                defaultKey = DefaultApiKeys.AMAP_KEY,
-                onTestClick = { viewModel.testApiKey(MapProvider.AMAP) }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            ApiKeyItem(
-                label = stringResource(R.string.map_provider_baidu),
-                apiKey = baiduApiKey,
-                onApiKeyChange = onBaiduApiKeyChange,
-                useCustom = useCustomBaiduKey,
-                onUseCustomChange = onUseCustomBaiduKeyChange,
-                defaultKey = DefaultApiKeys.BAIDU_MAPS_KEY,
-                onTestClick = { viewModel.testApiKey(MapProvider.BAIDU) }
-            )
-        }
+        ApiKeyItem(
+            label = stringResource(R.string.map_provider_baidu),
+            apiKey = baiduApiKey,
+            onApiKeyChange = onBaiduApiKeyChange,
+            useCustom = useCustomBaiduKey,
+            onUseCustomChange = onUseCustomBaiduKeyChange,
+            defaultKey = DefaultApiKeys.BAIDU_MAPS_KEY,
+            onTestClick = { viewModel.testApiKey(MapProvider.BAIDU) }
+        )
     }
 }
 
@@ -353,45 +419,76 @@ private fun ApiKeyItem(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val testSuccess = stringResource(R.string.test_api_success)
-    val testFail = stringResource(R.string.test_api_fail)
-    
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    val testFailed = stringResource(R.string.test_api_fail)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            .padding(12.dp)
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
-            Switch(checked = useCustom, onCheckedChange = onUseCustomChange)
+            Text(
+                label,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(R.string.use_custom_key),
+                    style = MaterialTheme.typography.labelMedium
+                )
+                Switch(
+                    checked = useCustom,
+                    onCheckedChange = onUseCustomChange,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
         }
-        
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         if (useCustom) {
             OutlinedTextField(
                 value = apiKey,
                 onValueChange = onApiKeyChange,
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.use_custom_key)) },
-                singleLine = true
+                placeholder = { Text("API Key") },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
             )
         } else {
-            Text(
-                text = "Key: ${if (defaultKey.isNotEmpty()) "****${defaultKey.takeLast(4)}" else "Not set"}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    text = defaultKey,
+                    modifier = Modifier.padding(12.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedButton(
             onClick = {
                 scope.launch {
                     val result = onTestClick()
-                    ToastUtils.showToast(
-                        context,
-                        if (result) testSuccess else testFail
-                    )
+                    ToastUtils.showToast(context, if (result) testSuccess else testFailed)
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
         ) {
             Text(stringResource(R.string.test_api))
         }
