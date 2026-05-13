@@ -2,6 +2,7 @@ package cn.fnrice.gpsinfo
 
 import android.Manifest
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
@@ -48,9 +49,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.fnrice.gpsinfo.ui.screen.HomeScreen
 import cn.fnrice.gpsinfo.ui.screen.MapScreen
@@ -62,6 +66,7 @@ import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         setContent {
             GPSInfoTheme {
                 GPSInfoApp()
@@ -85,6 +90,7 @@ fun GPSInfoApp() {
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.SATELLITES) }
     val viewModel: GnssViewModel = viewModel()
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     LaunchedEffect(Unit) {
         viewModel.initSettings(context)
@@ -106,13 +112,23 @@ fun GPSInfoApp() {
 
     LaunchedEffect(hasLocationPermission) {
         viewModel.updatePermissionState(hasLocationPermission)
-        if (hasLocationPermission) {
-            viewModel.startGnss(context)
-        }
     }
 
-    DisposableEffect(Unit) {
-        onDispose { viewModel.stopGnss() }
+    DisposableEffect(lifecycleOwner, hasLocationPermission) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_START) {
+                if (hasLocationPermission) {
+                    viewModel.startGnss(context)
+                }
+            } else if (event == Lifecycle.Event.ON_STOP) {
+                viewModel.stopGnss()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            viewModel.stopGnss()
+        }
     }
 
     NavigationSuiteScaffold(

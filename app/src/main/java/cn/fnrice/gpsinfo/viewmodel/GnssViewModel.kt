@@ -203,6 +203,7 @@ class GnssViewModel : ViewModel() {
 
     @SuppressLint("MissingPermission")
     fun startGnss(context: Context) {
+        if (gnssCallback != null) return // Already started
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         locationManager = lm
 
@@ -298,6 +299,7 @@ class GnssViewModel : ViewModel() {
     }
 
     fun stopGnss() {
+        if (gnssCallback == null) return // Already stopped
         gnssCallback?.let { locationManager?.unregisterGnssStatusCallback(it) }
         locationListener?.let { locationManager?.removeUpdates(it) }
         sensorListener?.let { sensorManager?.unregisterListener(it) }
