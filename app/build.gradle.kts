@@ -64,10 +64,8 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:8.3.0")
     implementation("com.google.android.gms:play-services-maps:20.0.0")
 
-    // 高德地图 (AMap) - 3D地图 + 搜索 + 定位
-    implementation("com.amap.api:3dmap:latest.integration")
-    implementation("com.amap.api:search:latest.integration")
-    implementation("com.amap.api:location:latest.integration")
+    // 高德地图 (AMap) - 3D地图
+    implementation("com.amap.api:3dmap:10.0.600")
 
     // 百度地图 (Baidu Maps)
     // 百度地图目前官方推荐通过 JAR/AAR 手动导入或特定私有仓库，
