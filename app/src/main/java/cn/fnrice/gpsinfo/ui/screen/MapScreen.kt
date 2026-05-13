@@ -19,6 +19,7 @@ import cn.fnrice.gpsinfo.data.MapProvider
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
 import com.amap.api.maps.AMap
 import com.amap.api.maps.CameraUpdateFactory
+import com.amap.api.maps.MapsInitializer
 import com.amap.api.maps.MapView
 import com.amap.api.maps.model.BitmapDescriptorFactory
 import com.amap.api.maps.model.LatLng
@@ -67,7 +68,12 @@ fun MapScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
 @Composable
 fun AMapViewContainer(latitude: Double?, longitude: Double?, modifier: Modifier = Modifier.fillMaxSize()) {
     val context = LocalContext.current
-    val mapView = remember { MapView(context) }
+    val mapView = remember {
+        // 在构造 MapView 之前进行合规检查
+        MapsInitializer.updatePrivacyShow(context, true, true)
+        MapsInitializer.updatePrivacyAgree(context, true)
+        MapView(context)
+    }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
 
     // 映射生命周期
@@ -90,17 +96,7 @@ fun AMapViewContainer(latitude: Double?, longitude: Double?, modifier: Modifier 
 
     AndroidView(
         factory = { 
-            mapView.apply {
-                // 设置高德地图的隐私政策（合规要求）
-                try {
-                    val privacyMethod = AMap::class.java.getMethod("updatePrivacyShow", android.content.Context::class.java, Boolean::class.java, Boolean::class.java)
-                    privacyMethod.invoke(null, context, true, true)
-                    val agreeMethod = AMap::class.java.getMethod("updatePrivacyAgree", android.content.Context::class.java, Boolean::class.java)
-                    agreeMethod.invoke(null, context, true)
-                } catch (e: Exception) {
-                    // 较旧版本或混淆可能导致反射失败，忽略
-                }
-            }
+            mapView
         },
         modifier = modifier,
         update = { view ->
