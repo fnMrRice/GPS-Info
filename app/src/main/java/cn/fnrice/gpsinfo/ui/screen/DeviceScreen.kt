@@ -2,6 +2,7 @@ package cn.fnrice.gpsinfo.ui.screen
 
 import android.content.Context
 import android.os.Build
+import cn.fnrice.gpsinfo.ui.components.AppCard
 import cn.fnrice.gpsinfo.ui.components.ToastUtils
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.animation.animateContentSize
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.graphics.SolidColor
 import cn.fnrice.gpsinfo.R
 import cn.fnrice.gpsinfo.viewmodel.GnssCapabilitiesInfo
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
@@ -34,6 +43,9 @@ import cn.fnrice.gpsinfo.viewmodel.SensorCapabilitiesInfo
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -50,6 +62,10 @@ fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues, onNaviga
     var clickCount by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
 
+    val stepsMessage = if (clickCount > 2 && !isDeveloperMode) {
+        stringResource(R.string.developer_mode_steps, 7 - clickCount)
+    } else ""
+
     val onVersionClick = {
         if (!isDeveloperMode) {
             clickCount++
@@ -57,41 +73,38 @@ fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues, onNaviga
                 viewModel.setDeveloperMode(true)
                 ToastUtils.showToast(context, R.string.developer_mode_enabled)
             } else if (clickCount > 2) {
-                val stepsLeft = 7 - clickCount
-                ToastUtils.showToast(
-                    context,
-                    context.getString(R.string.developer_mode_steps, stepsLeft)
-                )
+                ToastUtils.showToast(context, stepsMessage)
             }
         } else {
             ToastUtils.showToast(context, R.string.developer_mode_enabled)
         }
     }
 
+    // Renders scrollable profile UI with conditional capability cards
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
             .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
             stringResource(R.string.profile_title),
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(top = 12.dp),
+            modifier = Modifier.padding(top = 12.dp, bottom = 4.dp),
         )
 
-        DeviceInfoCard(context, onVersionClick)
+        DeviceInfoCard(onVersionClick)
 
         if (capabilities != null) {
             GnssCapabilitiesCard(capabilities)
         } else {
-            Card(modifier = Modifier.fillMaxWidth()) {
+            AppCard(title = stringResource(R.string.gnss_capabilities)) {
                 Text(
                     stringResource(R.string.gnss_android_version_required),
-                    modifier = Modifier.padding(12.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         }
@@ -105,7 +118,9 @@ fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues, onNaviga
 }
 
 @Composable
-private fun DeviceInfoCard(context: Context, onVersionClick: () -> Unit) {
+private fun DeviceInfoCard(onVersionClick: () -> Unit) {
+    val context = LocalContext.current
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
     val packageInfo = remember(context) {
         try {
             context.packageManager.getPackageInfo(context.packageName, 0)
@@ -115,83 +130,91 @@ private fun DeviceInfoCard(context: Context, onVersionClick: () -> Unit) {
     }
     val versionName = packageInfo?.versionName ?: "1.0.0"
 
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(stringResource(R.string.device_info), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-            InfoRow(stringResource(R.string.label_manufacturer), Build.MANUFACTURER)
-            InfoRow(stringResource(R.string.label_model), Build.MODEL)
-            InfoRow(stringResource(R.string.label_android_version), "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
-            
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onVersionClick)
-                    .padding(vertical = 2.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(stringResource(R.string.label_app_version), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
-                Text(versionName, fontWeight = FontWeight.Medium, style = MaterialTheme.typography.bodyMedium)
-            }
+    AppCard(
+        title = stringResource(R.string.device_info),
+        isExpandable = true,
+        isExpanded = isExpanded,
+        onExpandChange = { isExpanded = it }
+    ) {
+        InfoRow(stringResource(R.string.label_manufacturer), Build.MANUFACTURER)
+        InfoRow(stringResource(R.string.label_model), Build.MODEL)
+        InfoRow(
+            stringResource(R.string.label_android_version),
+            "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})"
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onVersionClick)
+                .padding(vertical = 2.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                stringResource(R.string.label_app_version),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                versionName,
+                fontWeight = FontWeight.Medium,
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
 
 @Composable
 private fun GnssCapabilitiesCard(caps: GnssCapabilitiesInfo) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(stringResource(R.string.gnss_capabilities), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-            InfoRow(stringResource(R.string.label_nav_messages), caps.hasNavigationMessages.yesNo())
-            InfoRow(stringResource(R.string.label_measurements), caps.hasMeasurements.yesNo())
-            InfoRow(stringResource(R.string.label_antenna_info), caps.hasAntennaInfo.yesNo())
-            InfoRow(stringResource(R.string.label_meas_corrections), caps.hasMeasurementCorrections.yesNo())
-            InfoRow(stringResource(R.string.label_correlation_vectors), caps.hasMeasurementCorrelationVectors.yesNo())
-        }
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    AppCard(
+        title = stringResource(R.string.gnss_capabilities),
+        isExpandable = true,
+        isExpanded = isExpanded,
+        onExpandChange = { isExpanded = it }
+    ) {
+        InfoRow(stringResource(R.string.label_nav_messages), caps.hasNavigationMessages.yesNo())
+        InfoRow(stringResource(R.string.label_measurements), caps.hasMeasurements.yesNo())
+        InfoRow(stringResource(R.string.label_antenna_info), caps.hasAntennaInfo.yesNo())
+        InfoRow(
+            stringResource(R.string.label_meas_corrections),
+            caps.hasMeasurementCorrections.yesNo()
+        )
+        InfoRow(
+            stringResource(R.string.label_correlation_vectors),
+            caps.hasMeasurementCorrelationVectors.yesNo()
+        )
     }
 }
 
 @Composable
 private fun SensorCapabilitiesCard(caps: SensorCapabilitiesInfo) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(stringResource(R.string.label_sensor_features), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-            InfoRow(stringResource(R.string.label_accelerometer), caps.hasAccelerometer.yesNo())
-            InfoRow(stringResource(R.string.label_gyroscope), caps.hasGyroscope.yesNo())
-            InfoRow(stringResource(R.string.label_magnetometer), caps.hasMagnetometer.yesNo())
-            InfoRow(stringResource(R.string.label_pressure), caps.hasPressure.yesNo())
-            InfoRow(stringResource(R.string.label_proximity), caps.hasProximity.yesNo())
-            InfoRow(stringResource(R.string.label_light), caps.hasLight.yesNo())
-            InfoRow(stringResource(R.string.label_rotation_vector), caps.hasRotationVector.yesNo())
-            InfoRow(stringResource(R.string.label_gravity), caps.hasGravity.yesNo())
-        }
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    AppCard(
+        title = stringResource(R.string.label_sensor_features),
+        isExpandable = true,
+        isExpanded = isExpanded,
+        onExpandChange = { isExpanded = it }
+    ) {
+        InfoRow(stringResource(R.string.label_accelerometer), caps.hasAccelerometer.yesNo())
+        InfoRow(stringResource(R.string.label_gyroscope), caps.hasGyroscope.yesNo())
+        InfoRow(stringResource(R.string.label_magnetometer), caps.hasMagnetometer.yesNo())
+        InfoRow(stringResource(R.string.label_pressure), caps.hasPressure.yesNo())
+        InfoRow(stringResource(R.string.label_proximity), caps.hasProximity.yesNo())
+        InfoRow(stringResource(R.string.label_light), caps.hasLight.yesNo())
+        InfoRow(stringResource(R.string.label_rotation_vector), caps.hasRotationVector.yesNo())
+        InfoRow(stringResource(R.string.label_gravity), caps.hasGravity.yesNo())
     }
 }
 
 @Composable
 private fun SettingsEntryCard(onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Icon(Icons.Default.Settings, contentDescription = null)
-            Text(
-                stringResource(R.string.settings_title),
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium
-            )
-        }
-    }
+    AppCard(
+        modifier = Modifier.clickable(onClick = onClick),
+        title = stringResource(R.string.settings_title),
+        icon = Icons.Default.Settings,
+        content = {}
+    )
 }
 
 @Composable

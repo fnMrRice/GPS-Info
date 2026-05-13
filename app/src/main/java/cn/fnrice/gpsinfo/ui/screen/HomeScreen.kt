@@ -109,73 +109,35 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
         }
 
         item {
-            OutlinedCard(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                border = CardDefaults.outlinedCardBorder().copy(
-                    brush = SolidColor(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                )
-            ) {
-                Column(modifier = Modifier.animateContentSize()) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { skyViewExpanded = !skyViewExpanded }
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+            AppCard(
+                title = stringResource(R.string.sky_view_title),
+                isExpandable = true,
+                isExpanded = skyViewExpanded,
+                onExpandChange = { skyViewExpanded = it },
+                icon = Icons.Default.MyLocation,
+                headerExtra = {
+                    IconButton(
+                        onClick = { isCompassEnabled = !isCompassEnabled },
+                        modifier = Modifier.size(24.dp)
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.MyLocation,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                stringResource(R.string.sky_view_title),
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(
-                                onClick = { isCompassEnabled = !isCompassEnabled },
-                                modifier = Modifier.size(24.dp)
-                            ) {
-                                Icon(
-                                    imageVector = if (isCompassEnabled) Icons.Default.Explore else Icons.Default.ExploreOff,
-                                    contentDescription = stringResource(if (isCompassEnabled) R.string.compass_rotate else R.string.compass_north_up),
-                                    modifier = Modifier.size(18.dp),
-                                    tint = if (isCompassEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Icon(
-                                imageVector = if (skyViewExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                            )
-                        }
-                    }
-                    AnimatedVisibility(
-                        visible = skyViewExpanded,
-                        enter = expandVertically() + fadeIn(),
-                        exit = shrinkVertically() + fadeOut()
-                    ) {
-                        SkyView(
-                            satellites = filteredSatellites,
-                            azimuth = state.azimuth,
-                            rotateWithCompass = isCompassEnabled,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(1f)
-                                .padding(8.dp)
+                        Icon(
+                            imageVector = if (isCompassEnabled) Icons.Default.Explore else Icons.Default.ExploreOff,
+                            contentDescription = stringResource(if (isCompassEnabled) R.string.compass_rotate else R.string.compass_north_up),
+                            modifier = Modifier.size(18.dp),
+                            tint = if (isCompassEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         )
                     }
                 }
+            ) {
+                SkyView(
+                    satellites = filteredSatellites,
+                    azimuth = state.azimuth,
+                    rotateWithCompass = isCompassEnabled,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .padding(top = 8.dp)
+                )
             }
         }
 
