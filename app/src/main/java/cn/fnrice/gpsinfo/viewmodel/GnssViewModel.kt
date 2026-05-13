@@ -216,6 +216,10 @@ class GnssViewModel : ViewModel() {
     }
 
     @SuppressLint("MissingPermission")
+    fun clearLogs() {
+        _logs.value = emptyList()
+    }
+
     fun startGnss(context: Context) {
         addLog("startGnss called")
         if (gnssCallback != null) {

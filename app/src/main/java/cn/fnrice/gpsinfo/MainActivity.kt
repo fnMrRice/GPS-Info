@@ -19,11 +19,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.SatelliteAlt
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,8 +29,6 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -51,7 +47,7 @@ import cn.fnrice.gpsinfo.ui.components.ToastUtils
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -61,7 +57,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.fnrice.gpsinfo.ui.screen.HomeScreen
 import cn.fnrice.gpsinfo.ui.screen.MapScreen
 import cn.fnrice.gpsinfo.ui.screen.DeviceScreen
-import cn.fnrice.gpsinfo.ui.screen.SettingsScreen
+import cn.fnrice.gpsinfo.ui.screen.SettingsDialog
 import cn.fnrice.gpsinfo.ui.theme.GPSInfoTheme
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
 
@@ -83,8 +79,11 @@ enum class AppDestinations(
 ) {
     SATELLITES(R.string.nav_home, Icons.Default.SatelliteAlt),
     MAP(R.string.nav_map, Icons.Default.Map),
-    DEVICE(R.string.nav_profile, Icons.Default.Devices),
-    SETTINGS(R.string.settings_title, Icons.Default.Settings),
+    DEVICE(R.string.nav_profile, Icons.Default.Devices);
+
+    companion object {
+        val navItems = entries.toList()
+    }
 }
 
 @Composable
@@ -106,9 +105,6 @@ fun GPSInfoApp() {
                     lastBackPressTime = currentTime
                     ToastUtils.showToast(context, backExitText)
                 }
-            }
-            AppDestinations.SETTINGS -> {
-                currentDestination = AppDestinations.DEVICE
             }
             else -> {
                 currentDestination = AppDestinations.SATELLITES
@@ -157,9 +153,11 @@ fun GPSInfoApp() {
         }
     }
 
+    var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
+
     NavigationSuiteScaffold(
         navigationSuiteItems = {
-            AppDestinations.entries.filter { it != AppDestinations.SETTINGS }.forEach { destination ->
+            AppDestinations.navItems.forEach { destination ->
                 item(
                     icon = { Icon(destination.icon, contentDescription = stringResource(destination.label)) },
                     label = { Text(stringResource(destination.label)) },
@@ -204,12 +202,13 @@ fun GPSInfoApp() {
                         AppDestinations.SATELLITES -> HomeScreen(viewModel, innerPadding)
                         AppDestinations.MAP -> MapScreen(viewModel, innerPadding)
                         AppDestinations.DEVICE -> DeviceScreen(viewModel, innerPadding, onNavigateToSettings = {
-                            currentDestination = AppDestinations.SETTINGS
-                        })
-                        AppDestinations.SETTINGS -> SettingsScreen(viewModel, onBack = {
-                            currentDestination = AppDestinations.DEVICE
+                            showSettingsDialog = true
                         })
                     }
+                }
+
+                if (showSettingsDialog) {
+                    SettingsDialog(viewModel = viewModel, onDismiss = { showSettingsDialog = false })
                 }
             }
         }

@@ -20,8 +20,8 @@ import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,9 +34,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.ui.window.Dialog
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.foundation.layout.Box
 import cn.fnrice.gpsinfo.ui.components.AppCard
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -60,7 +64,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(viewModel: GnssViewModel, onBack: () -> Unit) {
+fun SettingsDialog(viewModel: GnssViewModel, onDismiss: () -> Unit) {
     val currentMapProvider by viewModel.mapProvider.collectAsState()
     val googleApiKey by viewModel.googleApiKey.collectAsState()
     val amapApiKey by viewModel.amapApiKey.collectAsState()
@@ -71,73 +75,83 @@ fun SettingsScreen(viewModel: GnssViewModel, onBack: () -> Unit) {
     val isDeveloperMode by viewModel.isDeveloperMode.collectAsState()
     var showLogDialog by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.settings_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.surface
         ) {
-            MapSettingsCard(
-                currentProvider = currentMapProvider,
-                onProviderSelected = { viewModel.setMapProvider(it) }
-            )
-
-            if (isDeveloperMode) {
-                AppCard(
-                    title = stringResource(R.string.developer_options),
-                    icon = Icons.Default.BugReport
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text(stringResource(R.string.settings_title)) },
+                        navigationIcon = {
+                            IconButton(onClick = onDismiss) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                            }
+                        }
+                    )
+                }
+            ) { innerPadding ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .padding(horizontal = 16.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Column(
-                        modifier = Modifier.padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        ApiKeysCard(
-                            viewModel = viewModel,
-                            googleApiKey = googleApiKey,
-                            onGoogleApiKeyChange = { viewModel.setGoogleApiKey(it) },
-                            amapApiKey = amapApiKey,
-                            onAmapApiKeyChange = { viewModel.setAmapApiKey(it) },
-                            baiduApiKey = baiduApiKey,
-                            onBaiduApiKeyChange = { viewModel.setBaiduApiKey(it) },
-                            useCustomGoogleKey = useCustomGoogleKey,
-                            onUseCustomGoogleKeyChange = { viewModel.setUseCustomGoogleKey(it) },
-                            useCustomAmapKey = useCustomAmapKey,
-                            onUseCustomAmapKeyChange = { viewModel.setUseCustomAmapKey(it) },
-                            useCustomBaiduKey = useCustomBaiduKey,
-                            onUseCustomBaiduKeyChange = { viewModel.setUseCustomBaiduKey(it) }
-                        )
-                        
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                        
-                        Button(
-                            onClick = { showLogDialog = true },
-                            modifier = Modifier.fillMaxWidth()
+                    MapSettingsCard(
+                        currentProvider = currentMapProvider,
+                        onProviderSelected = { viewModel.setMapProvider(it) }
+                    )
+
+                    if (isDeveloperMode) {
+                        AppCard(
+                            title = stringResource(R.string.developer_options),
+                            icon = Icons.Default.BugReport
                         ) {
-                            Text(stringResource(R.string.label_view_logs))
+                            Column(
+                                modifier = Modifier.padding(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                ApiKeysCard(
+                                    viewModel = viewModel,
+                                    googleApiKey = googleApiKey,
+                                    onGoogleApiKeyChange = { viewModel.setGoogleApiKey(it) },
+                                    amapApiKey = amapApiKey,
+                                    onAmapApiKeyChange = { viewModel.setAmapApiKey(it) },
+                                    baiduApiKey = baiduApiKey,
+                                    onBaiduApiKeyChange = { viewModel.setBaiduApiKey(it) },
+                                    useCustomGoogleKey = useCustomGoogleKey,
+                                    onUseCustomGoogleKeyChange = { viewModel.setUseCustomGoogleKey(it) },
+                                    useCustomAmapKey = useCustomAmapKey,
+                                    onUseCustomAmapKeyChange = { viewModel.setUseCustomAmapKey(it) },
+                                    useCustomBaiduKey = useCustomBaiduKey,
+                                    onUseCustomBaiduKeyChange = { viewModel.setUseCustomBaiduKey(it) }
+                                )
+
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                                Button(
+                                    onClick = { showLogDialog = true },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(stringResource(R.string.label_view_logs))
+                                }
+                            }
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                if (showLogDialog) {
+                    LogViewDialog(viewModel = viewModel, onDismiss = { showLogDialog = false })
                 }
             }
-            
-            Spacer(modifier = Modifier.height(12.dp))
-        }
-
-        if (showLogDialog) {
-            LogViewDialog(viewModel = viewModel, onDismiss = { showLogDialog = false })
         }
     }
 }
@@ -146,7 +160,15 @@ fun SettingsScreen(viewModel: GnssViewModel, onBack: () -> Unit) {
 @Composable
 fun LogViewDialog(viewModel: GnssViewModel, onDismiss: () -> Unit) {
     val logs by viewModel.logs.collectAsState()
-    
+    val listState = rememberLazyListState()
+    var autoScroll by remember { mutableStateOf(true) }
+
+    LaunchedEffect(logs.size, autoScroll) {
+        if (autoScroll && logs.isNotEmpty()) {
+            listState.animateScrollToItem(logs.size - 1)
+        }
+    }
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -163,36 +185,59 @@ fun LogViewDialog(viewModel: GnssViewModel, onDismiss: () -> Unit) {
                             IconButton(onClick = onDismiss) {
                                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                             }
+                        },
+                        actions = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(end = 8.dp)
+                                    .clickable { autoScroll = !autoScroll }
+                            ) {
+                                Text(
+                                    stringResource(R.string.logs_auto_scroll),
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                                Checkbox(
+                                    checked = autoScroll,
+                                    onCheckedChange = { autoScroll = it }
+                                )
+                            }
+                            IconButton(onClick = { viewModel.clearLogs() }) {
+                                Icon(Icons.Default.Delete, contentDescription = "Clear Logs")
+                            }
                         }
                     )
                 }
             ) { innerPadding ->
-                if (logs.isEmpty()) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(stringResource(R.string.logs_empty), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        items(logs) { log ->
+                Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+                    if (logs.isEmpty()) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             Text(
-                                text = log,
-                                style = MaterialTheme.typography.bodySmall,
-                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                stringResource(R.string.logs_empty),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
+                    } else {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            items(logs) { log ->
+                                Text(
+                                    text = log,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                )
+                            }
+                        }
                     }
+
+                    // Quick scroll to top/bottom FABs could go here if needed
                 }
             }
         }
@@ -209,7 +254,7 @@ private fun MapSettingsCard(
             Text(stringResource(R.string.map_settings), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             
-            MapProvider.values().forEach { provider ->
+            MapProvider.entries.forEach { provider ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
