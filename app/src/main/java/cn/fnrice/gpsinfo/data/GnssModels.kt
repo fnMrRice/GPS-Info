@@ -78,5 +78,6 @@ data class GnssState(
     val isLocationEnabled: Boolean = false,
     val hasPermission: Boolean = false,
     val azimuth: Float = 0f,
+    val sensorValues: Map<Int, FloatArray> = emptyMap()
 )
 

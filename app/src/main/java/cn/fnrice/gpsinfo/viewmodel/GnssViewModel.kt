@@ -81,6 +81,7 @@ class GnssViewModel : ViewModel() {
     private var locationListener: LocationListener? = null
     private var sensorManager: SensorManager? = null
     private var rotationSensor: Sensor? = null
+    private val activeSensors = mutableListOf<Sensor>()
     private var sensorListener: SensorEventListener? = null
 
     fun initSettings(context: Context) {
@@ -245,8 +246,24 @@ class GnssViewModel : ViewModel() {
 
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         this.sensorManager = sensorManager
-        rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
-            ?: sensorManager.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)
+        
+        activeSensors.clear()
+        val sensorsToTrack = listOf(
+            Sensor.TYPE_ROTATION_VECTOR,
+            Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR,
+            Sensor.TYPE_ACCELEROMETER,
+            Sensor.TYPE_GYROSCOPE,
+            Sensor.TYPE_MAGNETIC_FIELD,
+            Sensor.TYPE_PRESSURE,
+            Sensor.TYPE_LIGHT,
+            Sensor.TYPE_PROXIMITY,
+            Sensor.TYPE_GRAVITY,
+            Sensor.TYPE_LINEAR_ACCELERATION
+        )
+
+        sensorsToTrack.forEach { type ->
+            sensorManager.getDefaultSensor(type)?.let { activeSensors.add(it) }
+        }
 
         val isGpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
         val hasPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
@@ -278,13 +295,20 @@ class GnssViewModel : ViewModel() {
                     val orientation = FloatArray(3)
                     SensorManager.getOrientation(rotationMatrix, orientation)
                     val azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
-                    _state.value = _state.value.copy(azimuth = azimuth)
+                    _state.value = _state.value.copy(
+                        azimuth = azimuth,
+                        sensorValues = _state.value.sensorValues + (event.sensor.type to event.values.clone())
+                    )
+                } else {
+                    _state.value = _state.value.copy(
+                        sensorValues = _state.value.sensorValues + (event.sensor.type to event.values.clone())
+                    )
                 }
             }
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
         }
-        rotationSensor?.let {
-            sensorManager.registerListener(sensorListener, it, SensorManager.SENSOR_DELAY_UI)
+        activeSensors.forEach { sensor ->
+            sensorManager.registerListener(sensorListener, sensor, SensorManager.SENSOR_DELAY_UI)
         }
 
         var firstSatelliteStatusReceived = false
@@ -382,6 +406,7 @@ class GnssViewModel : ViewModel() {
         gnssCallback?.let { locationManager?.unregisterGnssStatusCallback(it) }
         locationListener?.let { locationManager?.removeUpdates(it) }
         sensorListener?.let { sensorManager?.unregisterListener(it) }
+        activeSensors.clear()
         gnssCallback = null
         locationListener = null
         locationManager = null
