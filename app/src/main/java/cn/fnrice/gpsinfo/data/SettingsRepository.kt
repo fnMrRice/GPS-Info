@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import cn.fnrice.gpsinfo.BuildConfig
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -56,7 +57,7 @@ class SettingsRepository(private val context: Context) {
         .map { preferences -> preferences[USE_CUSTOM_BAIDU_KEY] ?: false }
 
     val isDeveloperModeFlow: Flow<Boolean> = context.dataStore.data
-        .map { preferences -> preferences[IS_DEVELOPER_MODE] ?: false }
+        .map { preferences -> preferences[IS_DEVELOPER_MODE] ?: BuildConfig.DEBUG }
 
     suspend fun setMapProvider(provider: MapProvider) {
         context.dataStore.edit { preferences ->

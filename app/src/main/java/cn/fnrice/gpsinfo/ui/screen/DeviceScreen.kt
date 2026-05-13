@@ -2,7 +2,7 @@ package cn.fnrice.gpsinfo.ui.screen
 
 import android.content.Context
 import android.os.Build
-import android.widget.Toast
+import cn.fnrice.gpsinfo.ui.components.ToastUtils
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -53,16 +53,15 @@ fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues, onNaviga
             clickCount++
             if (clickCount >= 7) {
                 viewModel.setDeveloperMode(true)
-                Toast.makeText(context, R.string.developer_mode_enabled, Toast.LENGTH_SHORT).show()
+                ToastUtils.showToast(context, R.string.developer_mode_enabled)
             } else if (clickCount > 2) {
-                Toast.makeText(
+                ToastUtils.showToast(
                     context,
-                    context.getString(R.string.developer_mode_steps, 7 - clickCount),
-                    Toast.LENGTH_SHORT
-                ).show()
+                    context.getString(R.string.developer_mode_steps, 7 - clickCount)
+                )
             }
         } else {
-            Toast.makeText(context, R.string.developer_mode_enabled, Toast.LENGTH_SHORT).show()
+            ToastUtils.showToast(context, R.string.developer_mode_enabled)
         }
     }
 

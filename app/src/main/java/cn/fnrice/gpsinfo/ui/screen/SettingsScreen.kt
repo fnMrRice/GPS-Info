@@ -40,7 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import android.widget.Toast
+import cn.fnrice.gpsinfo.ui.components.ToastUtils
 import cn.fnrice.gpsinfo.R
 import cn.fnrice.gpsinfo.data.DefaultApiKeys
 import cn.fnrice.gpsinfo.data.MapProvider
@@ -235,7 +235,7 @@ private fun ApiKeyItem(
                             } else {
                                 R.string.test_api_fail
                             }
-                            Toast.makeText(context, resId, Toast.LENGTH_SHORT).show()
+                            ToastUtils.showToast(context, resId)
                         }
                     },
                     enabled = !isTesting,
