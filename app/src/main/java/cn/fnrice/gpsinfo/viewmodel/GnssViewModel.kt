@@ -43,6 +43,15 @@ class GnssViewModel : ViewModel() {
     private val _actualMapProvider = MutableStateFlow(MapProvider.GOOGLE)
     val actualMapProvider: StateFlow<MapProvider> = _actualMapProvider.asStateFlow()
 
+    private val _googleApiKey = MutableStateFlow("")
+    val googleApiKey: StateFlow<String> = _googleApiKey.asStateFlow()
+
+    private val _amapApiKey = MutableStateFlow("")
+    val amapApiKey: StateFlow<String> = _amapApiKey.asStateFlow()
+
+    private val _baiduApiKey = MutableStateFlow("")
+    val baiduApiKey: StateFlow<String> = _baiduApiKey.asStateFlow()
+
     private var settingsRepository: SettingsRepository? = null
 
     private var locationManager: LocationManager? = null
@@ -58,6 +67,15 @@ class GnssViewModel : ViewModel() {
                     _mapProvider.value = provider
                     updateActualMapProvider(provider)
                 }
+            }
+            viewModelScope.launch {
+                repo.googleApiKeyFlow.collect { _googleApiKey.value = it }
+            }
+            viewModelScope.launch {
+                repo.amapApiKeyFlow.collect { _amapApiKey.value = it }
+            }
+            viewModelScope.launch {
+                repo.baiduApiKeyFlow.collect { _baiduApiKey.value = it }
             }
         }
     }
@@ -84,6 +102,24 @@ class GnssViewModel : ViewModel() {
     fun setMapProvider(provider: MapProvider) {
         viewModelScope.launch {
             settingsRepository?.setMapProvider(provider)
+        }
+    }
+
+    fun setGoogleApiKey(key: String) {
+        viewModelScope.launch {
+            settingsRepository?.setGoogleApiKey(key)
+        }
+    }
+
+    fun setAmapApiKey(key: String) {
+        viewModelScope.launch {
+            settingsRepository?.setAmapApiKey(key)
+        }
+    }
+
+    fun setBaiduApiKey(key: String) {
+        viewModelScope.launch {
+            settingsRepository?.setBaiduApiKey(key)
         }
     }
 

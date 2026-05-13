@@ -26,7 +26,10 @@ import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import cn.fnrice.gpsinfo.data.MapProvider
 
 @Composable
@@ -34,6 +37,9 @@ fun ProfileScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     val context = LocalContext.current
     val capabilities = remember { viewModel.getGnssCapabilities(context) }
     val currentMapProvider by viewModel.mapProvider.collectAsState()
+    val googleApiKey by viewModel.googleApiKey.collectAsState()
+    val amapApiKey by viewModel.amapApiKey.collectAsState()
+    val baiduApiKey by viewModel.baiduApiKey.collectAsState()
 
     Column(
         modifier = Modifier
@@ -52,6 +58,15 @@ fun ProfileScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
         MapSettingsCard(
             currentProvider = currentMapProvider,
             onProviderSelected = { viewModel.setMapProvider(it) }
+        )
+
+        ApiKeysCard(
+            googleApiKey = googleApiKey,
+            onGoogleApiKeyChange = { viewModel.setGoogleApiKey(it) },
+            amapApiKey = amapApiKey,
+            onAmapApiKeyChange = { viewModel.setAmapApiKey(it) },
+            baiduApiKey = baiduApiKey,
+            onBaiduApiKeyChange = { viewModel.setBaiduApiKey(it) }
         )
 
         DeviceInfoCard(context)
@@ -95,6 +110,47 @@ private fun MapSettingsCard(
                     Text(provider.displayName, style = MaterialTheme.typography.bodyMedium)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ApiKeysCard(
+    googleApiKey: String,
+    onGoogleApiKeyChange: (String) -> Unit,
+    amapApiKey: String,
+    onAmapApiKeyChange: (String) -> Unit,
+    baiduApiKey: String,
+    onBaiduApiKeyChange: (String) -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text("API Keys", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+            OutlinedTextField(
+                value = googleApiKey,
+                onValueChange = onGoogleApiKeyChange,
+                label = { Text("Google Maps API Key") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = amapApiKey,
+                onValueChange = onAmapApiKeyChange,
+                label = { Text("高德地图 API Key") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = baiduApiKey,
+                onValueChange = onBaiduApiKeyChange,
+                label = { Text("百度地图 API Key") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
         }
     }
 }
