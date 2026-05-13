@@ -1,7 +1,6 @@
 package cn.fnrice.gpsinfo.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -101,7 +100,7 @@ fun AppCard(
             brush = SolidColor(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         )
     ) {
-        Column(modifier = Modifier.animateContentSize()) {
+        Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

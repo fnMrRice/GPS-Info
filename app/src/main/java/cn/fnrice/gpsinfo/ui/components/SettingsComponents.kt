@@ -173,7 +173,7 @@ fun SettingsSectionCard(
             brush = SolidColor(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
         )
     ) {
-        Column(modifier = Modifier.padding(16.dp).animateContentSize()) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
@@ -303,7 +303,7 @@ fun ApiKeyItem(
     val scope = rememberCoroutineScope()
     var isTesting by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.fillMaxWidth().animateContentSize()) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,

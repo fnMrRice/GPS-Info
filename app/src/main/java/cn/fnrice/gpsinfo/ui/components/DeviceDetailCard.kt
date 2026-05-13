@@ -51,7 +51,7 @@ fun DeviceDetailCard(
             containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
-        Column(modifier = Modifier.animateContentSize()) {
+        Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

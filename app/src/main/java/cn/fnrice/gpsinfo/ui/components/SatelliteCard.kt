@@ -44,7 +44,6 @@ fun SatelliteCard(sat: SatelliteInfo) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .animateContentSize()
                 .padding(horizontal = 10.dp, vertical = 6.dp)
         ) {
             Row(
