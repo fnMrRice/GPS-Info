@@ -52,6 +52,14 @@ fun LocationCard(state: GnssState) {
             fontSize = 13.sp
         )
 
+        val provider = when (loc?.provider) {
+            "gps" -> stringResource(R.string.provider_gps)
+            "network" -> stringResource(R.string.provider_network)
+            "lastKnown" -> stringResource(R.string.provider_last_known)
+            null -> null
+            else -> stringResource(R.string.provider_unknown)
+        }
+
         val locationItems = listOf(
             stringResource(R.string.label_lat) to if (loc != null) "%.6f".format(loc.latitude) else null,
             stringResource(R.string.label_lon) to if (loc != null) "%.6f".format(loc.longitude) else null,
@@ -59,7 +67,7 @@ fun LocationCard(state: GnssState) {
             stringResource(R.string.label_accuracy) to if (loc != null) "%.1f m".format(loc.accuracy) else null,
             stringResource(R.string.label_speed) to if (loc != null) "%.1f m/s".format(loc.speed) else null,
             stringResource(R.string.label_bearing) to if (loc != null) "%.1f°".format(loc.bearing) else null,
-            stringResource(R.string.label_source) to loc?.provider
+            stringResource(R.string.label_source) to provider
         )
 
         locationItems.chunked(2).forEach { rowItems ->

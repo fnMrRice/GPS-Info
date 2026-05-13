@@ -101,4 +101,9 @@
     <string name="request_permission_rationale">需要定位权限来显示卫星信息和您的当前位置。</string>
     <string name="toast_gps_disabled">GPS 已禁用，请开启后再试。</string>
     <string name="toast_permission_denied">需要定位权限，但尚未授予。</string>
+    
+    <string name="provider_gps">GPS</string>
+    <string name="provider_network">网络</string>
+    <string name="provider_last_known">缓存位置</string>
+    <string name="provider_unknown">未知</string>
 </resources>

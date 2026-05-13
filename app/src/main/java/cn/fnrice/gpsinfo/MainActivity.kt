@@ -79,7 +79,6 @@ enum class AppDestinations(
     val icon: ImageVector,
 ) {
     SATELLITES(R.string.nav_home, Icons.Default.SatelliteAlt),
-    MAP(R.string.nav_map, Icons.Default.Map),
     DEVICE(R.string.nav_profile, Icons.Default.Devices);
 
     companion object {
@@ -222,7 +221,6 @@ fun GPSInfoApp() {
                 ) { destination ->
                     when (destination) {
                         AppDestinations.SATELLITES -> HomeScreen(viewModel, innerPadding)
-                        AppDestinations.MAP -> MapScreen(viewModel, innerPadding)
                         AppDestinations.DEVICE -> DeviceScreen(viewModel, innerPadding, onNavigateToSettings = {
                             showSettingsDialog = true
                         })

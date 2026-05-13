@@ -101,4 +101,9 @@
     <string name="request_permission_rationale">Location permission is necessary to display satellite information and your current position.</string>
     <string name="toast_gps_disabled">GPS is disabled. Please enable it to use this app.</string>
     <string name="toast_permission_denied">Location permission is required but not granted.</string>
+    
+    <string name="provider_gps">GPS</string>
+    <string name="provider_network">Network</string>
+    <string name="provider_last_known">Last Known</string>
+    <string name="provider_unknown">Unknown</string>
 </resources>

@@ -59,12 +59,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cn.fnrice.gpsinfo.R
 import cn.fnrice.gpsinfo.data.SatelliteInfo
-import cn.fnrice.gpsinfo.ui.components.AppCard
-import cn.fnrice.gpsinfo.ui.components.LocationCard
-import cn.fnrice.gpsinfo.ui.components.SatelliteCard
-import cn.fnrice.gpsinfo.ui.components.SkyView
-import cn.fnrice.gpsinfo.ui.components.StatusHeader
+import cn.fnrice.gpsinfo.ui.components.*
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
+import androidx.compose.ui.draw.clip
 
 enum class SatelliteFilterStatus {
     ALL,
@@ -167,15 +164,41 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                     }
                 }
             ) {
-                SkyView(
-                    satellites = filteredSatellites,
-                    azimuth = state.azimuth,
-                    rotateWithCompass = isCompassEnabled,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f)
-                        .padding(top = 8.dp)
-                )
+                Column {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .padding(top = 8.dp)
+                    ) {
+                        // 在底层显示地图
+                        if (state.location != null) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(8.dp))
+                            ) {
+                                when (actualMapProvider) {
+                                    cn.fnrice.gpsinfo.data.MapProvider.AMAP -> {
+                                        AMapViewContainer(state.location?.latitude, state.location?.longitude)
+                                    }
+                                    cn.fnrice.gpsinfo.data.MapProvider.GOOGLE -> {
+                                        GoogleMapViewContainer(state.location?.latitude, state.location?.longitude)
+                                    }
+                                    else -> {}
+                                }
+                            }
+                        }
+
+                        // 叠加卫星星历图
+                        SkyView(
+                            satellites = filteredSatellites,
+                            azimuth = state.azimuth,
+                            rotateWithCompass = isCompassEnabled,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
             }
         }
 
