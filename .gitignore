@@ -44,3 +44,4 @@ Thumbs.db
 
 # Kotlin
 *.kotlin_module
+/.claude/settings.local.json
