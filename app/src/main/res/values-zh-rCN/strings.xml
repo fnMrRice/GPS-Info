@@ -23,6 +23,7 @@
     <string name="label_source">来源</string>
     <string name="placeholder_no_data">---</string>
     <string name="waiting_for_location">正在等待定位...</string>
+    <string name="waiting_for_satellites">正在加载卫星数据...</string>
     <string name="no_satellites_detected">未检测到卫星</string>
     
     <string name="sky_view_title">星图</string>

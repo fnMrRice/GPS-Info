@@ -23,6 +23,7 @@
     <string name="label_source">Source</string>
     <string name="placeholder_no_data">---</string>
     <string name="waiting_for_location">Waiting for location...</string>
+    <string name="waiting_for_satellites">Loading satellite data...</string>
     <string name="no_satellites_detected">No satellites detected</string>
  
     <string name="sky_view_title">Sky Plot</string>

@@ -31,7 +31,7 @@ enum class SatelliteFilterStatus {
     NOT_USED
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     val state by viewModel.state.collectAsState()
@@ -39,8 +39,8 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
 
     var filterConstellation by remember { mutableStateOf<String?>(null) }
     var filterStatus by remember { mutableStateOf(SatelliteFilterStatus.ALL) }
-    var filterMenuExpanded by remember { mutableStateOf(false) }
     var skyViewExpanded by remember { mutableStateOf(false) }
+    var isFilterVisible by remember { mutableStateOf(false) }
     var isCompassEnabled by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
@@ -179,64 +179,106 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
             }
         }
 
-        if (constellations.isNotEmpty()) {
-            item {
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .animateContentSize()
+                    .padding(horizontal = 4.dp)
+            ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { isFilterVisible = !isFilterVisible }
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .horizontalScroll(rememberScrollState()),
-                    ) {
-                        FilterChip(
-                            selected = filterConstellation == null,
-                            onClick = { filterConstellation = null },
-                            label = { Text(stringResource(R.string.constellation_all)) },
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.FilterList,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = if (filterConstellation != null || filterStatus != SatelliteFilterStatus.ALL)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        constellations.forEach { name ->
-                            FilterChip(
-                                selected = filterConstellation == name,
-                                onClick = { filterConstellation = name },
-                                label = { Text(name) },
-                            )
-                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.filter_all),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
 
-                    Box {
-                        IconButton(onClick = { filterMenuExpanded = true }) {
-                            Icon(Icons.Default.FilterList, contentDescription = null)
-                        }
-                        DropdownMenu(
-                            expanded = filterMenuExpanded,
-                            onDismissRequest = { filterMenuExpanded = false }
+                    Icon(
+                        imageVector = if (isFilterVisible) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    )
+                }
+
+                AnimatedVisibility(
+                    visible = isFilterVisible,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            SatelliteFilterStatus.values().forEach { status ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            RadioButton(
-                                                selected = filterStatus == status,
-                                                onClick = null
-                                            )
-                                            Text(
-                                                when (status) {
-                                                    SatelliteFilterStatus.ALL -> stringResource(R.string.filter_all)
-                                                    SatelliteFilterStatus.IN_USE -> stringResource(R.string.filter_in_use)
-                                                    SatelliteFilterStatus.NOT_USED -> stringResource(R.string.filter_not_used)
-                                                }
+                            SatelliteFilterStatus.entries.forEach { status ->
+                                FilterChip(
+                                    selected = filterStatus == status,
+                                    onClick = { filterStatus = status },
+                                    label = {
+                                        Text(
+                                            when (status) {
+                                                SatelliteFilterStatus.ALL -> stringResource(R.string.filter_all)
+                                                SatelliteFilterStatus.IN_USE -> stringResource(R.string.filter_in_use)
+                                                SatelliteFilterStatus.NOT_USED -> stringResource(R.string.filter_not_used)
+                                            }
+                                        )
+                                    },
+                                    leadingIcon = if (filterStatus == status) {
+                                        {
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(16.dp)
                                             )
                                         }
-                                    },
-                                    onClick = {
-                                        filterStatus = status
-                                        filterMenuExpanded = false
-                                    }
+                                    } else null
+                                )
+                            }
+                        }
+
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            FilterChip(
+                                selected = filterConstellation == null,
+                                onClick = { filterConstellation = null },
+                                label = { Text(stringResource(R.string.constellation_all)) },
+                            )
+                            constellations.forEach { name ->
+                                FilterChip(
+                                    selected = filterConstellation == name,
+                                    onClick = { filterConstellation = name },
+                                    label = { Text(name) },
                                 )
                             }
                         }
@@ -245,8 +287,34 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
             }
         }
 
-        items(filteredSatellites, key = { "${it.constellationType}-${it.svid}" }) { sat ->
-            SatelliteCard(sat)
+        if (filteredSatellites.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(32.dp),
+                            strokeWidth = 3.dp,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = stringResource(R.string.waiting_for_satellites),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        } else {
+            items(filteredSatellites, key = { "${it.constellationType}-${it.svid}" }) { sat ->
+                SatelliteCard(sat)
+            }
         }
     }
 }
+                 
