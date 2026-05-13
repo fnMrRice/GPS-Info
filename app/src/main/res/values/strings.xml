@@ -99,4 +99,6 @@
     <string name="logs_clear">Clear Logs</string>
     <string name="logs_auto_scroll">Auto-scroll</string>
     <string name="request_permission_rationale">Location permission is necessary to display satellite information and your current position.</string>
+    <string name="toast_gps_disabled">GPS is disabled. Please enable it to use this app.</string>
+    <string name="toast_permission_denied">Location permission is required but not granted.</string>
 </resources>

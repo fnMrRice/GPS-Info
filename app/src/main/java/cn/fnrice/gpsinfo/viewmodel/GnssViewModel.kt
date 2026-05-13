@@ -3,6 +3,7 @@ package cn.fnrice.gpsinfo.viewmodel
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -16,17 +17,15 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresPermission
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
-import cn.fnrice.gpsinfo.data.GnssState
-import cn.fnrice.gpsinfo.data.LocationInfo
-import cn.fnrice.gpsinfo.data.SatelliteInfo
-import cn.fnrice.gpsinfo.data.MapProvider
-import cn.fnrice.gpsinfo.data.SettingsRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
+import cn.fnrice.gpsinfo.data.*
+import cn.fnrice.gpsinfo.ui.components.ToastUtils
+import cn.fnrice.gpsinfo.R
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import cn.fnrice.gpsinfo.data.GnssState
 
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
@@ -233,7 +232,7 @@ class GnssViewModel : ViewModel() {
             if (lastKnownLocation != null) {
                 addLog("Last known location found: ${lastKnownLocation.provider}")
                 _state.value = _state.value.copy(
-                    location = LocationInfo.fromLocation(lastKnownLocation)
+                    location = LocationInfo.fromLocation(lastKnownLocation).copy(provider = "lastKnown")
                 )
             }
         } catch (e: SecurityException) {
@@ -246,16 +245,24 @@ class GnssViewModel : ViewModel() {
             ?: sensorManager.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)
 
         val isGpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        val hasPermission = _state.value.hasPermission
+        val hasPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        
+        if (hasPermission != _state.value.hasPermission) {
+            updatePermissionState(hasPermission)
+        }
+        
         addLog("GPS Enabled: $isGpsEnabled, Permission: $hasPermission")
         _state.value = _state.value.copy(isLocationEnabled = isGpsEnabled)
 
         if (!isGpsEnabled) {
             addLog("startGnss aborted: GPS is disabled")
+            ToastUtils.showToast(context, R.string.toast_gps_disabled)
             return
         }
         if (!hasPermission) {
             addLog("startGnss aborted: Location permission not granted")
+            ToastUtils.showToast(context, R.string.toast_permission_denied)
             return
         }
 
