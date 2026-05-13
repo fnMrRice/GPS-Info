@@ -1,6 +1,7 @@
 package cn.fnrice.gpsinfo.ui.screen
 
 import android.os.Bundle
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,15 +22,15 @@ import com.amap.api.maps.AMap
 import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.MapsInitializer
 import com.amap.api.maps.MapView
-import com.amap.api.maps.model.BitmapDescriptorFactory
 import com.amap.api.maps.model.LatLng
-import com.amap.api.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.MapStyleOptions as GoogleMapStyleOptions
 import com.google.maps.android.compose.*
 
 @Composable
 fun MapScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     val actualMapProvider by viewModel.actualMapProvider.collectAsState()
     val state by viewModel.state.collectAsState()
+    val isDarkTheme = isSystemInDarkTheme()
 
     Box(
         modifier = Modifier
@@ -38,10 +39,10 @@ fun MapScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     ) {
         when (actualMapProvider) {
             MapProvider.AMAP -> {
-                AMapViewContainer(state.location?.latitude, state.location?.longitude)
+                AMapViewContainer(state.location?.latitude, state.location?.longitude, isDarkTheme = isDarkTheme)
             }
             MapProvider.GOOGLE -> {
-                GoogleMapViewContainer(state.location?.latitude, state.location?.longitude)
+                GoogleMapViewContainer(state.location?.latitude, state.location?.longitude, isDarkTheme = isDarkTheme)
             }
             else -> {
                 Column(
@@ -66,7 +67,12 @@ fun MapScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
 }
 
 @Composable
-fun AMapViewContainer(latitude: Double?, longitude: Double?, modifier: Modifier = Modifier.fillMaxSize()) {
+fun AMapViewContainer(
+    latitude: Double?,
+    longitude: Double?,
+    isDarkTheme: Boolean = isSystemInDarkTheme(),
+    modifier: Modifier = Modifier.fillMaxSize()
+) {
     val context = LocalContext.current
     val mapView = remember {
         // 在构造 MapView 之前进行合规检查
@@ -101,7 +107,7 @@ fun AMapViewContainer(latitude: Double?, longitude: Double?, modifier: Modifier 
         modifier = modifier,
         update = { view ->
             val amap = view.map
-            amap.mapType = AMap.MAP_TYPE_SATELLITE
+            amap.mapType = if (isDarkTheme) AMap.MAP_TYPE_NIGHT else AMap.MAP_TYPE_NORMAL
             // 禁用不必要的 UI 控件以保持简洁
             amap.uiSettings.isZoomControlsEnabled = false
             amap.uiSettings.isMyLocationButtonEnabled = false
@@ -109,44 +115,204 @@ fun AMapViewContainer(latitude: Double?, longitude: Double?, modifier: Modifier 
             if (latitude != null && longitude != null) {
                 val latLng = LatLng(latitude, longitude)
                 // 移动相机
-                amap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
-                
-                // 添加/更新标记
-                amap.clear()
-                amap.addMarker(
-                    MarkerOptions()
-                        .position(latLng)
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                )
+                amap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 3f))
             }
         }
     )
 }
 
 @Composable
-fun GoogleMapViewContainer(latitude: Double?, longitude: Double?, modifier: Modifier = Modifier.fillMaxSize()) {
+fun GoogleMapViewContainer(
+    latitude: Double?,
+    longitude: Double?,
+    isDarkTheme: Boolean = isSystemInDarkTheme(),
+    modifier: Modifier = Modifier.fillMaxSize()
+) {
     val cameraPositionState = rememberCameraPositionState()
 
     LaunchedEffect(latitude, longitude) {
         if (latitude != null && longitude != null) {
             cameraPositionState.position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
                 com.google.android.gms.maps.model.LatLng(latitude, longitude),
-                15f
+                3f
             )
         }
     }
 
+    val googleMapStyleOptions = if (isDarkTheme) {
+        GoogleMapStyleOptions(
+            "[\n" +
+                    "  {\n" +
+                    "    \"elementType\": \"geometry\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#242f3e\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"elementType\": \"labels.text.fill\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#746855\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"elementType\": \"labels.text.stroke\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#242f3e\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"featureType\": \"administrative.locality\",\n" +
+                    "    \"elementType\": \"labels.text.fill\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#d59563\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"featureType\": \"poi\",\n" +
+                    "    \"elementType\": \"labels.text.fill\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#d59563\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"featureType\": \"poi.park\",\n" +
+                    "    \"elementType\": \"geometry\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#263c3f\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"featureType\": \"poi.park\",\n" +
+                    "    \"elementType\": \"labels.text.fill\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#6b9a76\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"featureType\": \"road\",\n" +
+                    "    \"elementType\": \"geometry\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#38414e\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"featureType\": \"road\",\n" +
+                    "    \"elementType\": \"geometry.stroke\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#212a37\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"featureType\": \"road\",\n" +
+                    "    \"elementType\": \"labels.text.fill\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#9ca5b3\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"featureType\": \"road.highway\",\n" +
+                    "    \"elementType\": \"geometry\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#746855\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"featureType\": \"road.highway\",\n" +
+                    "    \"elementType\": \"geometry.stroke\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#1f2835\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"featureType\": \"road.highway\",\n" +
+                    "    \"elementType\": \"labels.text.fill\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#f3d19c\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"featureType\": \"transit\",\n" +
+                    "    \"elementType\": \"geometry\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#2f3948\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"featureType\": \"transit.station\",\n" +
+                    "    \"elementType\": \"labels.text.fill\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#d59563\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"featureType\": \"water\",\n" +
+                    "    \"elementType\": \"geometry\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#17263c\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"featureType\": \"water\",\n" +
+                    "    \"elementType\": \"labels.text.fill\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#515c6d\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"featureType\": \"water\",\n" +
+                    "    \"elementType\": \"labels.text.stroke\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      {\n" +
+                    "        \"color\": \"#17263c\"\n" +
+                    "      }\n" +
+                    "    ]\n" +
+                    "  }\n" +
+                    "]"
+        )
+    } else null
+
     GoogleMap(
         modifier = modifier,
         cameraPositionState = cameraPositionState,
-        properties = MapProperties(mapType = MapType.SATELLITE),
+        properties = MapProperties(
+            mapType = MapType.NORMAL,
+            mapStyleOptions = googleMapStyleOptions
+        ),
         uiSettings = MapUiSettings(zoomControlsEnabled = false, myLocationButtonEnabled = false)
     ) {
-        if (latitude != null && longitude != null) {
-            Marker(
-                state = rememberUpdatedMarkerState(position = com.google.android.gms.maps.model.LatLng(latitude, longitude)),
-                title = "Current Location"
-            )
-        }
     }
 }
