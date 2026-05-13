@@ -61,6 +61,13 @@
     <string name="label_manufacturer">制造商</string>
     <string name="label_model">型号</string>
     <string name="label_android_version">Android版本</string>
+    <string name="label_app_version">版本号</string>
+    <string name="developer_mode_enabled">您现在处于开发者模式！</string>
+    <string name="developer_mode_steps">再点击 %1$d 次即可开启开发者模式。</string>
+    <string name="developer_options">开发者选项</string>
+    <string name="test_api">测试</string>
+    <string name="test_api_success">连接成功！</string>
+    <string name="test_api_fail">连接失败。</string>
     <string name="label_nav_messages">导航消息</string>
     <string name="label_measurements">测量值</string>
     <string name="label_antenna_info">天线信息</string>

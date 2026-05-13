@@ -2,6 +2,7 @@ package cn.fnrice.gpsinfo.ui.screen
 
 import android.content.Context
 import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -32,11 +33,38 @@ import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 
 @Composable
 fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues, onNavigateToSettings: () -> Unit) {
     val context = LocalContext.current
     val capabilities = remember { viewModel.getGnssCapabilities(context) }
+    val isDeveloperMode by viewModel.isDeveloperMode.collectAsState()
+    var clickCount by remember { mutableIntStateOf(0) }
+    val scope = rememberCoroutineScope()
+
+    val onVersionClick = {
+        if (!isDeveloperMode) {
+            clickCount++
+            if (clickCount >= 7) {
+                viewModel.setDeveloperMode(true)
+                Toast.makeText(context, R.string.developer_mode_enabled, Toast.LENGTH_SHORT).show()
+            } else if (clickCount > 2) {
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.developer_mode_steps, 7 - clickCount),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        } else {
+            Toast.makeText(context, R.string.developer_mode_enabled, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -52,7 +80,7 @@ fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues, onNaviga
             modifier = Modifier.padding(top = 12.dp),
         )
 
-        DeviceInfoCard(context)
+        DeviceInfoCard(context, onVersionClick)
 
         if (capabilities != null) {
             GnssCapabilitiesCard(capabilities)
@@ -73,7 +101,16 @@ fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues, onNaviga
 }
 
 @Composable
-private fun DeviceInfoCard(context: Context) {
+private fun DeviceInfoCard(context: Context, onVersionClick: () -> Unit) {
+    val packageInfo = remember(context) {
+        try {
+            context.packageManager.getPackageInfo(context.packageName, 0)
+        } catch (e: Exception) {
+            null
+        }
+    }
+    val versionName = packageInfo?.versionName ?: "1.0.0"
+
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(stringResource(R.string.device_info), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
@@ -81,6 +118,17 @@ private fun DeviceInfoCard(context: Context) {
             InfoRow(stringResource(R.string.label_manufacturer), Build.MANUFACTURER)
             InfoRow(stringResource(R.string.label_model), Build.MODEL)
             InfoRow(stringResource(R.string.label_android_version), "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
+            
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onVersionClick)
+                    .padding(vertical = 2.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(stringResource(R.string.label_app_version), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
+                Text(versionName, fontWeight = FontWeight.Medium, style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
 }

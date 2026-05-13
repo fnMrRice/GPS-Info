@@ -65,6 +65,9 @@ class GnssViewModel : ViewModel() {
     private val _useCustomBaiduKey = MutableStateFlow(false)
     val useCustomBaiduKey: StateFlow<Boolean> = _useCustomBaiduKey.asStateFlow()
 
+    private val _isDeveloperMode = MutableStateFlow(false)
+    val isDeveloperMode: StateFlow<Boolean> = _isDeveloperMode.asStateFlow()
+
     private var settingsRepository: SettingsRepository? = null
 
     private var locationManager: LocationManager? = null
@@ -101,6 +104,9 @@ class GnssViewModel : ViewModel() {
             }
             viewModelScope.launch {
                 repo.useCustomBaiduKeyFlow.collect { _useCustomBaiduKey.value = it }
+            }
+            viewModelScope.launch {
+                repo.isDeveloperModeFlow.collect { _isDeveloperMode.value = it }
             }
         }
     }
@@ -163,6 +169,31 @@ class GnssViewModel : ViewModel() {
     fun setUseCustomBaiduKey(use: Boolean) {
         viewModelScope.launch {
             settingsRepository?.setUseCustomBaiduKey(use)
+        }
+    }
+
+    fun setDeveloperMode(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository?.setDeveloperMode(enabled)
+        }
+    }
+
+    suspend fun testApiKey(provider: MapProvider): Boolean {
+        val host = when (provider) {
+            MapProvider.GOOGLE -> "maps.googleapis.com"
+            MapProvider.AMAP -> "restapi.amap.com"
+            MapProvider.BAIDU -> "api.map.baidu.com"
+            else -> return false
+        }
+        return withContext(Dispatchers.IO) {
+            try {
+                Socket().use { socket ->
+                    socket.connect(InetSocketAddress(host, 80), 3000)
+                    true
+                }
+            } catch (e: Exception) {
+                false
+            }
         }
     }
 

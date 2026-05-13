@@ -15,10 +15,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -28,15 +30,22 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import android.widget.Toast
 import cn.fnrice.gpsinfo.R
 import cn.fnrice.gpsinfo.data.DefaultApiKeys
 import cn.fnrice.gpsinfo.data.MapProvider
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +57,7 @@ fun SettingsScreen(viewModel: GnssViewModel, onBack: () -> Unit) {
     val useCustomGoogleKey by viewModel.useCustomGoogleKey.collectAsState()
     val useCustomAmapKey by viewModel.useCustomAmapKey.collectAsState()
     val useCustomBaiduKey by viewModel.useCustomBaiduKey.collectAsState()
+    val isDeveloperMode by viewModel.isDeveloperMode.collectAsState()
 
     Scaffold(
         topBar = {
@@ -74,20 +84,23 @@ fun SettingsScreen(viewModel: GnssViewModel, onBack: () -> Unit) {
                 onProviderSelected = { viewModel.setMapProvider(it) }
             )
 
-            ApiKeysCard(
-                googleApiKey = googleApiKey,
-                onGoogleApiKeyChange = { viewModel.setGoogleApiKey(it) },
-                amapApiKey = amapApiKey,
-                onAmapApiKeyChange = { viewModel.setAmapApiKey(it) },
-                baiduApiKey = baiduApiKey,
-                onBaiduApiKeyChange = { viewModel.setBaiduApiKey(it) },
-                useCustomGoogleKey = useCustomGoogleKey,
-                onUseCustomGoogleKeyChange = { viewModel.setUseCustomGoogleKey(it) },
-                useCustomAmapKey = useCustomAmapKey,
-                onUseCustomAmapKeyChange = { viewModel.setUseCustomAmapKey(it) },
-                useCustomBaiduKey = useCustomBaiduKey,
-                onUseCustomBaiduKeyChange = { viewModel.setUseCustomBaiduKey(it) }
-            )
+            if (isDeveloperMode) {
+                ApiKeysCard(
+                    viewModel = viewModel,
+                    googleApiKey = googleApiKey,
+                    onGoogleApiKeyChange = { viewModel.setGoogleApiKey(it) },
+                    amapApiKey = amapApiKey,
+                    onAmapApiKeyChange = { viewModel.setAmapApiKey(it) },
+                    baiduApiKey = baiduApiKey,
+                    onBaiduApiKeyChange = { viewModel.setBaiduApiKey(it) },
+                    useCustomGoogleKey = useCustomGoogleKey,
+                    onUseCustomGoogleKeyChange = { viewModel.setUseCustomGoogleKey(it) },
+                    useCustomAmapKey = useCustomAmapKey,
+                    onUseCustomAmapKeyChange = { viewModel.setUseCustomAmapKey(it) },
+                    useCustomBaiduKey = useCustomBaiduKey,
+                    onUseCustomBaiduKeyChange = { viewModel.setUseCustomBaiduKey(it) }
+                )
+            }
             
             Spacer(modifier = Modifier.height(12.dp))
         }
@@ -133,6 +146,7 @@ private fun MapSettingsCard(
 
 @Composable
 private fun ApiKeysCard(
+    viewModel: GnssViewModel,
     googleApiKey: String,
     onGoogleApiKeyChange: (String) -> Unit,
     amapApiKey: String,
@@ -148,7 +162,7 @@ private fun ApiKeysCard(
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Text(stringResource(R.string.api_keys), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.developer_options), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
             ApiKeyItem(
@@ -157,7 +171,8 @@ private fun ApiKeysCard(
                 onApiKeyChange = onGoogleApiKeyChange,
                 useCustom = useCustomGoogleKey,
                 onUseCustomChange = onUseCustomGoogleKeyChange,
-                defaultKey = DefaultApiKeys.GOOGLE_MAPS_KEY
+                defaultKey = DefaultApiKeys.GOOGLE_MAPS_KEY,
+                onTestClick = { viewModel.testApiKey(MapProvider.GOOGLE) }
             )
             
             Spacer(modifier = Modifier.height(12.dp))
@@ -168,7 +183,8 @@ private fun ApiKeysCard(
                 onApiKeyChange = onAmapApiKeyChange,
                 useCustom = useCustomAmapKey,
                 onUseCustomChange = onUseCustomAmapKeyChange,
-                defaultKey = DefaultApiKeys.AMAP_KEY
+                defaultKey = DefaultApiKeys.AMAP_KEY,
+                onTestClick = { viewModel.testApiKey(MapProvider.AMAP) }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -179,7 +195,8 @@ private fun ApiKeysCard(
                 onApiKeyChange = onBaiduApiKeyChange,
                 useCustom = useCustomBaiduKey,
                 onUseCustomChange = onUseCustomBaiduKeyChange,
-                defaultKey = DefaultApiKeys.BAIDU_MAPS_KEY
+                defaultKey = DefaultApiKeys.BAIDU_MAPS_KEY,
+                onTestClick = { viewModel.testApiKey(MapProvider.BAIDU) }
             )
         }
     }
@@ -192,8 +209,13 @@ private fun ApiKeyItem(
     onApiKeyChange: (String) -> Unit,
     useCustom: Boolean,
     onUseCustomChange: (Boolean) -> Unit,
-    defaultKey: String
+    defaultKey: String,
+    onTestClick: suspend () -> Boolean
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var isTesting by remember { mutableStateOf(false) }
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -201,9 +223,31 @@ private fun ApiKeyItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.use_custom_key), style = MaterialTheme.typography.labelMedium)
-                Switch(checked = useCustom, onCheckedChange = onUseCustomChange)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = {
+                        isTesting = true
+                        scope.launch {
+                            val success = onTestClick()
+                            isTesting = false
+                            val resId = if (success) {
+                                R.string.test_api_success
+                            } else {
+                                R.string.test_api_fail
+                            }
+                            Toast.makeText(context, resId, Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    enabled = !isTesting,
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                    modifier = Modifier.height(32.dp)
+                ) {
+                    Text(stringResource(R.string.test_api), style = MaterialTheme.typography.labelMedium)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(stringResource(R.string.use_custom_key), style = MaterialTheme.typography.labelMedium)
+                    Switch(checked = useCustom, onCheckedChange = onUseCustomChange)
+                }
             }
         }
         

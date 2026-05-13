@@ -25,6 +25,7 @@ class SettingsRepository(private val context: Context) {
     private val USE_CUSTOM_GOOGLE_KEY = booleanPreferencesKey("use_custom_google_key")
     private val USE_CUSTOM_AMAP_KEY = booleanPreferencesKey("use_custom_amap_key")
     private val USE_CUSTOM_BAIDU_KEY = booleanPreferencesKey("use_custom_baidu_key")
+    private val IS_DEVELOPER_MODE = booleanPreferencesKey("is_developer_mode")
 
     val mapProviderFlow: Flow<MapProvider> = context.dataStore.data
         .map { preferences ->
@@ -53,6 +54,9 @@ class SettingsRepository(private val context: Context) {
 
     val useCustomBaiduKeyFlow: Flow<Boolean> = context.dataStore.data
         .map { preferences -> preferences[USE_CUSTOM_BAIDU_KEY] ?: false }
+
+    val isDeveloperModeFlow: Flow<Boolean> = context.dataStore.data
+        .map { preferences -> preferences[IS_DEVELOPER_MODE] ?: false }
 
     suspend fun setMapProvider(provider: MapProvider) {
         context.dataStore.edit { preferences ->
@@ -93,6 +97,12 @@ class SettingsRepository(private val context: Context) {
     suspend fun setUseCustomBaiduKey(use: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[USE_CUSTOM_BAIDU_KEY] = use
+        }
+    }
+
+    suspend fun setDeveloperMode(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[IS_DEVELOPER_MODE] = enabled
         }
     }
 }
