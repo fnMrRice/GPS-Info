@@ -176,6 +176,19 @@ class GnssViewModel : ViewModel() {
         val callback = object : GnssStatus.Callback() {
             override fun onSatelliteStatusChanged(status: GnssStatus) {
                 val satellites = (0 until status.satelliteCount).map { i ->
+                    val hasCarrier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        status.hasCarrierFrequencyHz(i)
+                    } else false
+                    val carrierFreq = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && hasCarrier) {
+                        status.getCarrierFrequencyHz(i)
+                    } else 0f
+                    val hasBasebandCn0 = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        status.hasBasebandCn0DbHz(i)
+                    } else false
+                    val basebandCn0 = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && hasBasebandCn0) {
+                        status.getBasebandCn0DbHz(i)
+                    } else 0f
+
                     SatelliteInfo(
                         svid = status.getSvid(i),
                         constellationType = status.getConstellationType(i),
@@ -183,6 +196,10 @@ class GnssViewModel : ViewModel() {
                         elevationDegrees = status.getElevationDegrees(i),
                         azimuthDegrees = status.getAzimuthDegrees(i),
                         usedInFix = status.usedInFix(i),
+                        hasCarrierFrequency = hasCarrier,
+                        carrierFrequencyHz = carrierFreq,
+                        hasBasebandCn0DbHz = hasBasebandCn0,
+                        basebandCn0DbHz = basebandCn0,
                     )
                 }
                 _state.value = _state.value.copy(

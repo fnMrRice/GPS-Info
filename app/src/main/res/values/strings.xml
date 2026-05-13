@@ -20,9 +20,14 @@
     <string name="label_accuracy">Accuracy</string>
     <string name="label_speed">Speed</string>
     <string name="label_bearing">Bearing</string>
-
+    <string name="label_source">Source</string>
+    <string name="placeholder_no_data">---</string>
+    <string name="waiting_for_location">Waiting for location...</string>
+    <string name="no_satellites_detected">No satellites detected</string>
+ 
     <string name="sky_view_title">Sky Plot</string>
     <string name="constellation_all">All</string>
+    <string name="filter_usable">Usable</string>
     <string name="sat_used_in_fix">Used in fix</string>
 
     <string name="profile_title">Device</string>
@@ -50,4 +55,12 @@
     <string name="label_correlation_vectors">Correlation Vectors</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="constellation_gps">GPS (USA)</string>
+    <string name="constellation_glonass">GLONASS (Russia)</string>
+    <string name="constellation_galileo">Galileo (EU)</string>
+    <string name="constellation_beidou">BDS (China)</string>
+    <string name="constellation_qzss">QZSS (Japan)</string>
+    <string name="constellation_irnss">NavIC (India)</string>
+    <string name="constellation_sbas">SBAS</string>
+    <string name="constellation_unknown">Unknown</string>
 </resources>

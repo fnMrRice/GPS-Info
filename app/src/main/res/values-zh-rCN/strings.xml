@@ -20,9 +20,14 @@
     <string name="label_accuracy">精度</string>
     <string name="label_speed">速度</string>
     <string name="label_bearing">方位角</string>
+    <string name="label_source">来源</string>
+    <string name="placeholder_no_data">---</string>
+    <string name="waiting_for_location">正在等待定位...</string>
+    <string name="no_satellites_detected">未检测到卫星</string>
     
     <string name="sky_view_title">星图</string>
     <string name="constellation_all">全部</string>
+    <string name="filter_usable">可用</string>
     <string name="sat_used_in_fix">已参与定位</string>
     
     <string name="profile_title">设备</string>
@@ -50,4 +55,12 @@
     <string name="label_correlation_vectors">相关向量</string>
     <string name="yes">是</string>
     <string name="no">否</string>
+    <string name="constellation_gps">GPS (美国)</string>
+    <string name="constellation_glonass">GLONASS (俄罗斯)</string>
+    <string name="constellation_galileo">伽利略 (欧盟)</string>
+    <string name="constellation_beidou">北斗 (中国)</string>
+    <string name="constellation_qzss">QZSS (日本)</string>
+    <string name="constellation_irnss">NavIC (印度)</string>
+    <string name="constellation_sbas">SBAS</string>
+    <string name="constellation_unknown">未知</string>
 </resources>

@@ -1,5 +1,6 @@
 package cn.fnrice.gpsinfo.ui.screen
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +17,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,6 +45,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -50,15 +57,19 @@ import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
 import kotlin.math.cos
 import kotlin.math.sin
 
-private val constellationColors = mapOf(
-    "GPS" to Color(0xFF4CAF50),
-    "GLONASS" to Color(0xFFFF9800),
-    "Galileo" to Color(0xFF2196F3),
-    "北斗" to Color(0xFFF44336),
-    "QZSS" to Color(0xFF9C27B0),
-    "SBAS" to Color(0xFF795548),
-    "IRNSS" to Color(0xFF00BCD4),
-)
+private fun getConstellationColor(name: String): Color {
+    // Because names now include sources and are localized, we check for containment or use a prefix
+    return when {
+        name.contains("GPS") -> Color(0xFF4CAF50)
+        name.contains("GLONASS") -> Color(0xFFFF9800)
+        name.contains("Galileo") || name.contains("伽利略") -> Color(0xFF2196F3)
+        name.contains("BDS") || name.contains("北斗") -> Color(0xFFF44336)
+        name.contains("QZSS") -> Color(0xFF9C27B0)
+        name.contains("SBAS") -> Color(0xFF795548)
+        name.contains("NavIC") || name.contains("IRNSS") -> Color(0xFF00BCD4)
+        else -> Color.Gray
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,12 +78,53 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     val actualMapProvider by viewModel.actualMapProvider.collectAsState()
 
     var filterConstellation by remember { mutableStateOf<String?>(null) }
+    var filterUsableOnly by remember { mutableStateOf(false) }
+    var filterMenuExpanded by remember { mutableStateOf(false) }
     var skyViewExpanded by remember { mutableStateOf(false) }
 
-    val filteredSatellites = state.satellites.filter {
-        filterConstellation == null || it.constellationName == filterConstellation
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val filteredSatellites = remember(state.satellites, filterConstellation, filterUsableOnly, context) {
+        val list = state.satellites.filter {
+            (filterConstellation == null || it.getConstellationName(context) == filterConstellation) &&
+                    (!filterUsableOnly || it.cn0DbHz > 0 || (it.hasBasebandCn0DbHz && it.basebandCn0DbHz > 0))
+        }
+        
+        // 排序逻辑
+        val country = java.util.Locale.getDefault().country
+        val isChinaRegion = country == "CN" || country == "HK" || country == "MO"
+        
+        list.sortedWith(compareBy<SatelliteInfo> {
+            val priority = when (it.constellationType) {
+                android.location.GnssStatus.CONSTELLATION_BEIDOU -> if (isChinaRegion) 0 else 2
+                android.location.GnssStatus.CONSTELLATION_GPS -> 1
+                android.location.GnssStatus.CONSTELLATION_GALILEO -> if (isChinaRegion) 2 else 0
+                else -> 3
+            }
+            priority
+        }.thenBy { it.svid })
     }
-    val constellations = state.satellites.map { it.constellationName }.distinct().sorted()
+    
+    val constellations = remember(state.satellites, context) {
+        val country = java.util.Locale.getDefault().country
+        val isChinaRegion = country == "CN" || country == "HK" || country == "MO"
+        
+        state.satellites
+            .map { it.constellationType }
+            .distinct()
+            .sortedWith(compareBy { type ->
+                when (type) {
+                    android.location.GnssStatus.CONSTELLATION_BEIDOU -> if (isChinaRegion) 0 else 2
+                    android.location.GnssStatus.CONSTELLATION_GPS -> 1
+                    android.location.GnssStatus.CONSTELLATION_GALILEO -> if (isChinaRegion) 2 else 0
+                    else -> 3
+                }
+            })
+            .map { type ->
+                // Create a dummy SatelliteInfo to get the localized name
+                val dummy = SatelliteInfo(svid = 0, constellationType = type, cn0DbHz = 0f, elevationDegrees = 0f, azimuthDegrees = 0f, usedInFix = false)
+                dummy.getConstellationName(context)
+            }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -131,20 +183,56 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
         if (constellations.isNotEmpty()) {
             item {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    FilterChip(
-                        selected = filterConstellation == null,
-                        onClick = { filterConstellation = null },
-                        label = { Text(stringResource(R.string.constellation_all)) },
-                    )
-                    constellations.forEach { name ->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .horizontalScroll(rememberScrollState()),
+                    ) {
                         FilterChip(
-                            selected = filterConstellation == name,
-                            onClick = { filterConstellation = name },
-                            label = { Text(name) },
+                            selected = filterConstellation == null,
+                            onClick = { filterConstellation = null },
+                            label = { Text(stringResource(R.string.constellation_all)) },
                         )
+                        constellations.forEach { name ->
+                            FilterChip(
+                                selected = filterConstellation == name,
+                                onClick = { filterConstellation = name },
+                                label = { Text(name) },
+                            )
+                        }
+                    }
+
+                    Box {
+                        IconButton(onClick = { filterMenuExpanded = true }) {
+                            Icon(Icons.Default.FilterList, contentDescription = null)
+                        }
+                        DropdownMenu(
+                            expanded = filterMenuExpanded,
+                            onDismissRequest = { filterMenuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        androidx.compose.material3.Checkbox(
+                                            checked = filterUsableOnly,
+                                            onCheckedChange = null
+                                        )
+                                        Text(stringResource(R.string.filter_usable))
+                                    }
+                                },
+                                onClick = {
+                                    filterUsableOnly = !filterUsableOnly
+                                    filterMenuExpanded = false
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -152,6 +240,23 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
 
         items(filteredSatellites, key = { "${it.constellationType}-${it.svid}" }) { sat ->
             SatelliteCard(sat)
+        }
+
+        if (filteredSatellites.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        stringResource(R.string.no_satellites_detected),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
         }
     }
 }
@@ -199,35 +304,108 @@ private fun StatusHeader(state: GnssState, mapProvider: cn.fnrice.gpsinfo.data.M
 }
 
 @Composable
+private fun ShimmerPlaceholder(
+    text: String,
+    modifier: Modifier = Modifier,
+    style: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodyMedium,
+    fontWeight: FontWeight? = FontWeight.Medium
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "shimmer")
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "alpha"
+    )
+    
+    Text(
+        text = text,
+        modifier = modifier.graphicsLayer(alpha = alpha),
+        style = style,
+        fontWeight = fontWeight
+    )
+}
+
+@Composable
 private fun LocationCard(state: GnssState) {
-    val loc = state.location ?: return
+    val loc = state.location
+    val placeholder = stringResource(R.string.placeholder_no_data)
+    
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Text(stringResource(R.string.card_location), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(stringResource(R.string.card_location), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                if (loc == null) {
+                    Text(
+                        stringResource(R.string.waiting_for_location),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(stringResource(R.string.label_lat), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("%.6f".format(loc.latitude), fontWeight = FontWeight.Medium)
+                if (loc != null) {
+                    Text("%.6f".format(loc.latitude), fontWeight = FontWeight.Medium)
+                } else {
+                    ShimmerPlaceholder(placeholder)
+                }
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(stringResource(R.string.label_lon), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("%.6f".format(loc.longitude), fontWeight = FontWeight.Medium)
+                if (loc != null) {
+                    Text("%.6f".format(loc.longitude), fontWeight = FontWeight.Medium)
+                } else {
+                    ShimmerPlaceholder(placeholder)
+                }
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(stringResource(R.string.label_alt), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("%.1f m".format(loc.altitude), fontWeight = FontWeight.Medium)
+                if (loc != null) {
+                    Text("%.1f m".format(loc.altitude), fontWeight = FontWeight.Medium)
+                } else {
+                    ShimmerPlaceholder(placeholder)
+                }
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(stringResource(R.string.label_accuracy), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("%.1f m".format(loc.accuracy), fontWeight = FontWeight.Medium)
+                if (loc != null) {
+                    Text("%.1f m".format(loc.accuracy), fontWeight = FontWeight.Medium)
+                } else {
+                    ShimmerPlaceholder(placeholder)
+                }
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(stringResource(R.string.label_speed), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("%.1f m/s".format(loc.speed), fontWeight = FontWeight.Medium)
+                if (loc != null) {
+                    Text("%.1f m/s".format(loc.speed), fontWeight = FontWeight.Medium)
+                } else {
+                    ShimmerPlaceholder(placeholder)
+                }
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(stringResource(R.string.label_bearing), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("%.1f°".format(loc.bearing), fontWeight = FontWeight.Medium)
+                if (loc != null) {
+                    Text("%.1f°".format(loc.bearing), fontWeight = FontWeight.Medium)
+                } else {
+                    ShimmerPlaceholder(placeholder)
+                }
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(stringResource(R.string.label_source), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (loc != null) {
+                    Text(loc.provider, fontWeight = FontWeight.Medium)
+                } else {
+                    ShimmerPlaceholder(placeholder)
+                }
             }
         }
     }
@@ -235,17 +413,18 @@ private fun LocationCard(state: GnssState) {
 
 @Composable
 private fun SkyView(satellites: List<SatelliteInfo>, modifier: Modifier = Modifier) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center,
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            drawSkyPlot(satellites, size.minDimension)
+            drawSkyPlot(satellites, size.minDimension, context)
         }
     }
 }
 
-private fun DrawScope.drawSkyPlot(satellites: List<SatelliteInfo>, diameter: Float) {
+private fun DrawScope.drawSkyPlot(satellites: List<SatelliteInfo>, diameter: Float, context: android.content.Context) {
     val center = Offset(diameter / 2, diameter / 2)
     val radius = diameter / 2 - 24
 
@@ -288,7 +467,7 @@ private fun DrawScope.drawSkyPlot(satellites: List<SatelliteInfo>, diameter: Flo
         val x = center.x + (r * sin(azimRad)).toFloat()
         val y = center.y - (r * cos(azimRad)).toFloat()
 
-        val satColor = constellationColors[sat.constellationName] ?: Color.White
+        val satColor = getConstellationColor(sat.getConstellationName(context))
         val dotRadius = if (sat.usedInFix) 8f else 5f
 
         drawCircle(color = satColor, radius = dotRadius, center = Offset(x, y))
@@ -309,6 +488,9 @@ private fun DrawScope.drawSkyPlot(satellites: List<SatelliteInfo>, diameter: Flo
 
 @Composable
 private fun SatelliteCard(sat: SatelliteInfo) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val constellationName = remember(sat.constellationType, context) { sat.getConstellationName(context) }
+    
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -318,30 +500,51 @@ private fun SatelliteCard(sat: SatelliteInfo) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                val color = constellationColors[sat.constellationName] ?: Color.Gray
+                val color = getConstellationColor(constellationName)
                 Canvas(modifier = Modifier.size(12.dp)) {
                     drawCircle(color = color)
                 }
                 Column {
-                    Text(
-                        "${sat.constellationName} ${sat.svid}",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            "$constellationName ${sat.svid}",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        if (sat.hasCarrierFrequency) {
+                            val band = when {
+                                sat.carrierFrequencyHz > 1.5e9 -> "L1"
+                                sat.carrierFrequencyHz > 1.1e9 -> "L5"
+                                else -> "L"
+                            }
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+                            ) {
+                                Text(
+                                    band,
+                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            }
+                        }
+                    }
                     if (sat.usedInFix) {
                         Text(stringResource(R.string.sat_used_in_fix), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }
             Column(horizontalAlignment = Alignment.End) {
+                val signal = if (sat.cn0DbHz > 0) sat.cn0DbHz else if (sat.hasBasebandCn0DbHz) sat.basebandCn0DbHz else 0f
                 Text(
-                    "%.1f dB-Hz".format(sat.cn0DbHz),
+                    if (signal > 0) "%.1f dB-Hz".format(signal) else "---",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     color = when {
-                        sat.cn0DbHz > 30 -> Color(0xFF4CAF50)
-                        sat.cn0DbHz > 20 -> Color(0xFFFF9800)
-                        else -> Color(0xFFF44336)
+                        signal > 30 -> Color(0xFF4CAF50)
+                        signal > 20 -> Color(0xFFFF9800)
+                        signal > 0 -> Color(0xFFF44336)
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
                     },
                 )
                 Text(
