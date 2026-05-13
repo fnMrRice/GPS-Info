@@ -80,10 +80,3 @@ data class GnssState(
     val azimuth: Float = 0f,
 )
 
-data class SatelliteSnapshot(
-    val id: Long = System.currentTimeMillis(),
-    val timestamp: Long = System.currentTimeMillis(),
-    val satellites: List<SatelliteInfo>,
-    val location: LocationInfo?,
-    val label: String = "",
-)
