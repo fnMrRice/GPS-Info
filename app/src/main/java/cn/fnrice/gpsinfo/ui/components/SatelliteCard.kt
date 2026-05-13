@@ -32,7 +32,6 @@ fun SatelliteCard(sat: SatelliteInfo) {
     OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 2.dp)
             .clickable { expanded = !expanded },
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.outlinedCardColors(
@@ -45,7 +44,7 @@ fun SatelliteCard(sat: SatelliteInfo) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 6.dp)
+                .padding(horizontal = 10.dp, vertical = 6.dp)
                 .animateContentSize()
         ) {
             Row(

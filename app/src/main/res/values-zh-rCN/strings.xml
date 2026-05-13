@@ -27,7 +27,9 @@
     
     <string name="sky_view_title">星图</string>
     <string name="constellation_all">全部</string>
-    <string name="filter_usable">可用</string>
+    <string name="filter_in_use">正在使用</string>
+    <string name="filter_not_used">未使用</string>
+    <string name="filter_all">全部</string>
     <string name="sat_used_in_fix">已参与定位</string>
     <string name="sat_not_used">未使用</string>
     <string name="label_elev">仰角</string>

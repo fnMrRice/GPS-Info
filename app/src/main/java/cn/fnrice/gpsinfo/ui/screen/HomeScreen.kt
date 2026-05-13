@@ -1,18 +1,20 @@
 package cn.fnrice.gpsinfo.ui.screen
 
+import androidx.compose.animation.*
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -22,6 +24,12 @@ import cn.fnrice.gpsinfo.data.SatelliteInfo
 import cn.fnrice.gpsinfo.ui.components.*
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
 
+enum class SatelliteFilterStatus {
+    ALL,
+    IN_USE,
+    NOT_USED
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
@@ -29,15 +37,20 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     val actualMapProvider by viewModel.actualMapProvider.collectAsState()
 
     var filterConstellation by remember { mutableStateOf<String?>(null) }
-    var filterUsableOnly by remember { mutableStateOf(false) }
+    var filterStatus by remember { mutableStateOf(SatelliteFilterStatus.ALL) }
     var filterMenuExpanded by remember { mutableStateOf(false) }
     var skyViewExpanded by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val filteredSatellites = remember(state.satellites, filterConstellation, filterUsableOnly, context) {
+    val filteredSatellites = remember(state.satellites, filterConstellation, filterStatus, context) {
         val list = state.satellites.filter {
-            (filterConstellation == null || it.getConstellationName(context) == filterConstellation) &&
-                    (!filterUsableOnly || it.cn0DbHz > 0 || (it.hasBasebandCn0DbHz && it.basebandCn0DbHz > 0))
+            val matchesConstellation = filterConstellation == null || it.getConstellationName(context) == filterConstellation
+            val matchesStatus = when (filterStatus) {
+                SatelliteFilterStatus.ALL -> true
+                SatelliteFilterStatus.IN_USE -> it.usedInFix
+                SatelliteFilterStatus.NOT_USED -> !it.usedInFix
+            }
+            matchesConstellation && matchesStatus
         }
         
         // 排序逻辑
@@ -82,43 +95,60 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
             .fillMaxSize()
             .padding(innerPadding)
             .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(vertical = 8.dp),
     ) {
         item {
             StatusHeader(state, actualMapProvider)
         }
 
-        if (state.location != null) {
-            item {
-                LocationCard(state)
-            }
+        item {
+            LocationCard(state)
         }
 
         item {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column {
+            OutlinedCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    brush = SolidColor(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                )
+            ) {
+                Column(modifier = Modifier.animateContentSize()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp),
+                            .clickable { skyViewExpanded = !skyViewExpanded }
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            stringResource(R.string.sky_view_title),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
-                        IconButton(onClick = { skyViewExpanded = !skyViewExpanded }) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = if (skyViewExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                contentDescription = null
+                                imageVector = Icons.Default.MyLocation,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                stringResource(R.string.sky_view_title),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold
                             )
                         }
+                        Icon(
+                            imageVector = if (skyViewExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
                     }
-                    if (skyViewExpanded) {
+                    AnimatedVisibility(
+                        visible = skyViewExpanded,
+                        enter = expandVertically() + fadeIn(),
+                        exit = shrinkVertically() + fadeOut()
+                    ) {
                         SkyView(
                             satellites = filteredSatellites,
                             modifier = Modifier
@@ -165,24 +195,32 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                             expanded = filterMenuExpanded,
                             onDismissRequest = { filterMenuExpanded = false }
                         ) {
-                            DropdownMenuItem(
-                                text = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        androidx.compose.material3.Checkbox(
-                                            checked = filterUsableOnly,
-                                            onCheckedChange = null
-                                        )
-                                        Text(stringResource(R.string.filter_usable))
+                            SatelliteFilterStatus.values().forEach { status ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            RadioButton(
+                                                selected = filterStatus == status,
+                                                onClick = null
+                                            )
+                                            Text(
+                                                when (status) {
+                                                    SatelliteFilterStatus.ALL -> stringResource(R.string.filter_all)
+                                                    SatelliteFilterStatus.IN_USE -> stringResource(R.string.filter_in_use)
+                                                    SatelliteFilterStatus.NOT_USED -> stringResource(R.string.filter_not_used)
+                                                }
+                                            )
+                                        }
+                                    },
+                                    onClick = {
+                                        filterStatus = status
+                                        filterMenuExpanded = false
                                     }
-                                },
-                                onClick = {
-                                    filterUsableOnly = !filterUsableOnly
-                                    filterMenuExpanded = false
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }
@@ -191,23 +229,6 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
 
         items(filteredSatellites, key = { "${it.constellationType}-${it.svid}" }) { sat ->
             SatelliteCard(sat)
-        }
-
-        if (filteredSatellites.isEmpty()) {
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        stringResource(R.string.no_satellites_detected),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
         }
     }
 }
