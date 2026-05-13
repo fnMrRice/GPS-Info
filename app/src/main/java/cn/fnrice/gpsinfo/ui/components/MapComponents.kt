@@ -5,7 +5,6 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.os.Bundle
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -13,33 +12,40 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.graphics.createBitmap
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.compose.ui.viewinterop.AndroidView
 import cn.fnrice.gpsinfo.data.SatelliteInfo
 import com.amap.api.maps.AMap
 import com.amap.api.maps.CameraUpdateFactory
-import com.amap.api.maps.MapsInitializer
 import com.amap.api.maps.MapView
-import com.google.android.gms.maps.model.BitmapDescriptorFactory as GoogleBitmapDescriptorFactory
-import com.amap.api.maps.model.BitmapDescriptorFactory as AMapBitmapDescriptorFactory
+import com.amap.api.maps.MapsInitializer
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.MapStyleOptions as GoogleMapStyleOptions
-import com.google.maps.android.compose.*
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapType
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberUpdatedMarkerState
 import kotlin.math.cos
 import kotlin.math.sin
+import com.amap.api.maps.model.BitmapDescriptorFactory as AMapBitmapDescriptorFactory
+import com.google.android.gms.maps.model.BitmapDescriptorFactory as GoogleBitmapDescriptorFactory
+import com.google.android.gms.maps.model.MapStyleOptions as GoogleMapStyleOptions
 
 @Composable
 fun AMapViewContainer(
+    modifier: Modifier = Modifier,
     latitude: Double?,
     longitude: Double?,
     satellites: List<SatelliteInfo> = emptyList(),
     azimuth: Float = 0f,
     rotateWithCompass: Boolean = false,
     isDarkTheme: Boolean = isSystemInDarkTheme(),
-    modifier: Modifier = Modifier.fillMaxSize()
 ) {
     val context = LocalContext.current
     val mapView = remember {
@@ -74,7 +80,7 @@ fun AMapViewContainer(
         update = { view ->
             val amap = view.map
             amap.mapType = if (isDarkTheme) AMap.MAP_TYPE_NIGHT else AMap.MAP_TYPE_NORMAL
-            
+
             // 禁用手势和 UI 控件
             amap.uiSettings.apply {
                 isZoomControlsEnabled = false
@@ -84,11 +90,11 @@ fun AMapViewContainer(
 
             if (latitude != null && longitude != null) {
                 val latLng = LatLng(latitude, longitude)
-                amap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 3f))
-                
+                amap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 4f))
+
                 // 获取当前需要的卫星 ID 集合
                 val currentSatIds = satellites.map { "${it.constellationType}-${it.svid}" }.toSet()
-                
+
                 // 移除不再需要的 Marker
                 val iterator = markerCache.entries.iterator()
                 while (iterator.hasNext()) {
@@ -101,16 +107,23 @@ fun AMapViewContainer(
 
                 satellites.forEach { sat ->
                     val satId = "${sat.constellationType}-${sat.svid}"
-                    val azimRad = Math.toRadians((sat.azimuthDegrees + if (rotateWithCompass) -azimuth else 0f).toDouble())
-                    val distance = (1 - sat.elevationDegrees / 90f) * 10.0 
+                    val azimRad =
+                        Math.toRadians((sat.azimuthDegrees + if (rotateWithCompass) -azimuth else 0f).toDouble())
+                    val distance = (1 - sat.elevationDegrees / 90f) * 10.0
                     val dLat = distance * cos(azimRad)
                     val dLng = distance * sin(azimRad)
                     val satLatLng = LatLng(latitude + dLat, longitude + dLng)
-                    
+
                     val satColor = getConstellationColor(sat.getConstellationName(context)).toArgb()
                     val bitmapKey = "${sat.svid}-${satColor}-${sat.usedInFix}"
                     val bitmapDescriptor = bitmapCache.getOrPut(bitmapKey) {
-                        AMapBitmapDescriptorFactory.fromBitmap(createSatelliteBitmap(sat.svid.toString(), satColor, sat.usedInFix))
+                        AMapBitmapDescriptorFactory.fromBitmap(
+                            createSatelliteBitmap(
+                                sat.svid.toString(),
+                                satColor,
+                                sat.usedInFix
+                            )
+                        )
                     }
 
                     val existingMarker = markerCache[satId]
@@ -123,7 +136,7 @@ fun AMapViewContainer(
                             .anchor(0.5f, 0.5f)
                             .title(sat.svid.toString())
                             .icon(bitmapDescriptor)
-                        
+
                         val newMarker = amap.addMarker(markerOptions)
                         markerCache[satId] = newMarker
                     }
@@ -139,24 +152,26 @@ fun AMapViewContainer(
 
 @Composable
 fun GoogleMapViewContainer(
+    modifier: Modifier = Modifier,
     latitude: Double?,
     longitude: Double?,
     satellites: List<SatelliteInfo> = emptyList(),
     azimuth: Float = 0f,
     rotateWithCompass: Boolean = false,
     isDarkTheme: Boolean = isSystemInDarkTheme(),
-    modifier: Modifier = Modifier.fillMaxSize()
 ) {
     val cameraPositionState = rememberCameraPositionState()
-    val googleBitmapCache = remember { mutableMapOf<String, com.google.android.gms.maps.model.BitmapDescriptor>() }
+    val googleBitmapCache =
+        remember { mutableMapOf<String, com.google.android.gms.maps.model.BitmapDescriptor>() }
     val context = LocalContext.current
 
     LaunchedEffect(latitude, longitude) {
         if (latitude != null && longitude != null) {
-            cameraPositionState.position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
-                com.google.android.gms.maps.model.LatLng(latitude, longitude),
-                3f
-            )
+            cameraPositionState.position =
+                com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
+                    com.google.android.gms.maps.model.LatLng(latitude, longitude),
+                    4f
+                )
         }
     }
 
@@ -183,21 +198,28 @@ fun GoogleMapViewContainer(
     ) {
         if (latitude != null && longitude != null) {
             satellites.forEach { sat ->
-                val satId = "${sat.constellationType}-${sat.svid}"
-                val azimRad = Math.toRadians((sat.azimuthDegrees + if (rotateWithCompass) -azimuth else 0f).toDouble())
+                val azimRad =
+                    Math.toRadians((sat.azimuthDegrees + if (rotateWithCompass) -azimuth else 0f).toDouble())
                 val distance = (1 - sat.elevationDegrees / 90f) * 10.0
                 val dLat = distance * cos(azimRad)
                 val dLng = distance * sin(azimRad)
-                val satLatLng = com.google.android.gms.maps.model.LatLng(latitude + dLat, longitude + dLng)
-                
+                val satLatLng =
+                    com.google.android.gms.maps.model.LatLng(latitude + dLat, longitude + dLng)
+
                 val satColor = getConstellationColor(sat.getConstellationName(context)).toArgb()
                 val bitmapKey = "${sat.svid}-${satColor}-${sat.usedInFix}"
                 val bitmapDescriptor = googleBitmapCache.getOrPut(bitmapKey) {
-                    GoogleBitmapDescriptorFactory.fromBitmap(createSatelliteBitmap(sat.svid.toString(), satColor, sat.usedInFix))
+                    GoogleBitmapDescriptorFactory.fromBitmap(
+                        createSatelliteBitmap(
+                            sat.svid.toString(),
+                            satColor,
+                            sat.usedInFix
+                        )
+                    )
                 }
-                
+
                 Marker(
-                    state = rememberMarkerState(key = satId, position = satLatLng),
+                    state = rememberUpdatedMarkerState(position = satLatLng),
                     anchor = androidx.compose.ui.geometry.Offset(0.5f, 0.5f),
                     title = sat.svid.toString(),
                     icon = bitmapDescriptor
@@ -209,19 +231,19 @@ fun GoogleMapViewContainer(
 
 private fun createSatelliteBitmap(text: String, color: Int, usedInFix: Boolean): Bitmap {
     val size = if (usedInFix) 40 else 30
-    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val bitmap = createBitmap(size, size)
     val canvas = Canvas(bitmap)
     val paint = Paint().apply {
         isAntiAlias = true
         this.color = color
     }
-    
+
     canvas.drawCircle(size / 2f, size / 2f, size / 3.5f, paint)
     if (usedInFix) {
         paint.alpha = 100
         canvas.drawCircle(size / 2f, size / 2f, size / 2f, paint)
     }
-    
+
     paint.apply {
         this.color = android.graphics.Color.WHITE
         textSize = 18f
@@ -230,7 +252,7 @@ private fun createSatelliteBitmap(text: String, color: Int, usedInFix: Boolean):
         alpha = 255
     }
     canvas.drawText(text, size / 2f, size / 2f + 7f, paint)
-    
+
     return bitmap
 }
 
