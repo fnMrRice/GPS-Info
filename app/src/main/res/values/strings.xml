@@ -106,4 +106,9 @@
     <string name="provider_network">Network</string>
     <string name="provider_last_known">Last Known</string>
     <string name="provider_unknown">Unknown</string>
+    <string name="map_info_overlay_latitude">Lat: %1$.6f</string>
+    <string name="map_info_overlay_longitude">Lon: %1$.6f</string>
+    <string name="map_info_overlay_speed">Speed: %1$.1f m/s</string>
+    <string name="sensor_card_title">Sensors</string>
+    <string name="sensor_azimuth">Azimuth: %1$.1f°</string>
 </resources>

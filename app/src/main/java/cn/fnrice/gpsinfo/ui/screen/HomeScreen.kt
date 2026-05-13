@@ -28,13 +28,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.filled.ExploreOff
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.*
+import androidx.compose.foundation.background
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -78,6 +73,8 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     var skyViewExpanded by remember { mutableStateOf(false) }
     var isFilterVisible by remember { mutableStateOf(false) }
     var isCompassEnabled by remember { mutableStateOf(false) }
+    var isMapInfoExpanded by remember { mutableStateOf(false) }
+    var sensorCardExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     val actualMapProvider by viewModel.actualMapProvider.collectAsState()
@@ -151,16 +148,30 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                 onExpandChange = { skyViewExpanded = it },
                 icon = Icons.Default.MyLocation,
                 headerExtra = {
-                    IconButton(
-                        onClick = { isCompassEnabled = !isCompassEnabled },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (isCompassEnabled) Icons.Default.Explore else Icons.Default.ExploreOff,
-                            contentDescription = stringResource(if (isCompassEnabled) R.string.compass_rotate else R.string.compass_north_up),
-                            modifier = Modifier.size(18.dp),
-                            tint = if (isCompassEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(
+                            onClick = { isMapInfoExpanded = !isMapInfoExpanded },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (isMapInfoExpanded) Icons.Default.Info else Icons.Default.Info,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = if (isMapInfoExpanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(4.dp))
+                        IconButton(
+                            onClick = { isCompassEnabled = !isCompassEnabled },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (isCompassEnabled) Icons.Default.Explore else Icons.Default.ExploreOff,
+                                contentDescription = stringResource(if (isCompassEnabled) R.string.compass_rotate else R.string.compass_north_up),
+                                modifier = Modifier.size(18.dp),
+                                tint = if (isCompassEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            )
+                        }
                     }
                 }
             ) {
@@ -179,16 +190,69 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                         ) {
                             when (actualMapProvider) {
                                 cn.fnrice.gpsinfo.data.MapProvider.AMAP -> {
-                                    AMapViewContainer(state.location?.latitude, state.location?.longitude)
+                                    AMapViewContainer(
+                                        latitude = state.location?.latitude,
+                                        longitude = state.location?.longitude,
+                                        satellites = filteredSatellites,
+                                        azimuth = state.azimuth,
+                                        rotateWithCompass = isCompassEnabled
+                                    )
                                 }
                                 cn.fnrice.gpsinfo.data.MapProvider.GOOGLE -> {
-                                    GoogleMapViewContainer(state.location?.latitude, state.location?.longitude)
+                                    GoogleMapViewContainer(
+                                        latitude = state.location?.latitude,
+                                        longitude = state.location?.longitude,
+                                        satellites = filteredSatellites,
+                                        azimuth = state.azimuth,
+                                        rotateWithCompass = isCompassEnabled
+                                    )
                                 }
                                 else -> {}
                             }
                         }
 
-                        // 叠加卫星星历图
+                        // 叠加位置信息 Overlay
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = isMapInfoExpanded,
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .background(
+                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
+                                        RoundedCornerShape(4.dp)
+                                    )
+                                    .padding(8.dp)
+                            ) {
+                                Column {
+                                    state.location?.let { loc ->
+                                        Text(
+                                            text = stringResource(R.string.map_info_overlay_latitude, loc.latitude),
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.map_info_overlay_longitude, loc.longitude),
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.map_info_overlay_speed, loc.speed),
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                    } ?: Text(
+                                        text = stringResource(R.string.provider_unknown),
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }
+                            }
+                        }
+
+                        // 叠加卫星星历图 (保留原有的 SkyView 也可以，或者用户指的是不再需要叠加而是直接用地图 API)
+                        // 根据需求“卫星标最好直接用地图api在地图上显示出来”，我们已经把卫星画在地图上了。
+                        // 这里我们暂时保留 SkyView，但可以给它一个开关，或者根据用户指示移除。
+                        // 目前我选择保留它，因为地图层级很低（3f），SkyView 提供了一个更清晰的相对关系。
+                        // 如果用户明确要求移除叠加，再移除。
                         SkyView(
                             satellites = filteredSatellites,
                             azimuth = state.azimuth,
@@ -333,6 +397,29 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
         } else {
             items(filteredSatellites, key = { "${it.constellationType}-${it.svid}" }) { sat ->
                 SatelliteCard(sat)
+            }
+        }
+
+        item {
+            AppCard(
+                title = stringResource(R.string.sensor_card_title),
+                isExpandable = true,
+                isExpanded = sensorCardExpanded,
+                onExpandChange = { sensorCardExpanded = it },
+                icon = Icons.Default.Sensors
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.sensor_azimuth, state.azimuth),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    // 后续可以增加更多传感器数据
+                }
             }
         }
     }

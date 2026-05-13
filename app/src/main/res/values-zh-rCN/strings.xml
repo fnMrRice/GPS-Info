@@ -106,4 +106,9 @@
     <string name="provider_network">网络</string>
     <string name="provider_last_known">缓存位置</string>
     <string name="provider_unknown">未知</string>
+    <string name="map_info_overlay_latitude">纬度: %1$.6f</string>
+    <string name="map_info_overlay_longitude">经度: %1$.6f</string>
+    <string name="map_info_overlay_speed">速度: %1$.1f m/s</string>
+    <string name="sensor_card_title">传感器信息</string>
+    <string name="sensor_azimuth">方位角: %1$.1f°</string>
 </resources>
