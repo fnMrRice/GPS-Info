@@ -1,6 +1,6 @@
 package cn.fnrice.gpsinfo.ui.components
 
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -44,8 +44,8 @@ fun SatelliteCard(sat: SatelliteInfo) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 10.dp, vertical = 6.dp)
                 .animateContentSize()
+                .padding(horizontal = 10.dp, vertical = 6.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -169,39 +169,45 @@ fun SatelliteCard(sat: SatelliteInfo) {
                 )
             }
 
-            if (expanded) {
-                Spacer(modifier = Modifier.height(12.dp))
-                HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        SatelliteDataField(label = stringResource(R.string.label_elev), value = "%.1f°".format(sat.elevationDegrees), modifier = Modifier.weight(1f))
-                        SatelliteDataField(label = stringResource(R.string.label_azim), value = "%.1f°".format(sat.azimuthDegrees), modifier = Modifier.weight(1f))
-                    }
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                    Spacer(modifier = Modifier.height(12.dp))
                     
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        SatelliteDataField(label = stringResource(R.string.label_cn0), value = if (sat.cn0DbHz > 0) "%.1f dB-Hz".format(sat.cn0DbHz) else "---", modifier = Modifier.weight(1f))
-                        SatelliteDataField(label = stringResource(R.string.label_baseband_cn0), value = if (sat.hasBasebandCn0DbHz) "%.1f dB-Hz".format(sat.basebandCn0DbHz) else "---", modifier = Modifier.weight(1f))
-                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            SatelliteDataField(label = stringResource(R.string.label_elev), value = "%.1f°".format(sat.elevationDegrees), modifier = Modifier.weight(1f))
+                            SatelliteDataField(label = stringResource(R.string.label_azim), value = "%.1f°".format(sat.azimuthDegrees), modifier = Modifier.weight(1f))
+                        }
+                        
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            SatelliteDataField(label = stringResource(R.string.label_cn0), value = if (sat.cn0DbHz > 0) "%.1f dB-Hz".format(sat.cn0DbHz) else "---", modifier = Modifier.weight(1f))
+                            SatelliteDataField(label = stringResource(R.string.label_baseband_cn0), value = if (sat.hasBasebandCn0DbHz) "%.1f dB-Hz".format(sat.basebandCn0DbHz) else "---", modifier = Modifier.weight(1f))
+                        }
 
-                    if (sat.hasCarrierFrequency) {
-                        SatelliteDataField(label = stringResource(R.string.label_freq), value = "%.3f MHz".format(sat.carrierFrequencyHz / 1e6))
-                    }
+                        if (sat.hasCarrierFrequency) {
+                            SatelliteDataField(label = stringResource(R.string.label_freq), value = "%.3f MHz".format(sat.carrierFrequencyHz / 1e6))
+                        }
 
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        SatelliteDataField(
-                            label = stringResource(R.string.label_almanac),
-                            value = stringResource(if (sat.hasAlmanacData) R.string.yes else R.string.no),
-                            valueColor = if (sat.hasAlmanacData) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.weight(1f)
-                        )
-                        SatelliteDataField(
-                            label = stringResource(R.string.label_ephemeris),
-                            value = stringResource(if (sat.hasEphemerisData) R.string.yes else R.string.no),
-                            valueColor = if (sat.hasEphemerisData) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.weight(1f)
-                        )
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            SatelliteDataField(
+                                label = stringResource(R.string.label_almanac),
+                                value = stringResource(if (sat.hasAlmanacData) R.string.yes else R.string.no),
+                                valueColor = if (sat.hasAlmanacData) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.weight(1f)
+                            )
+                            SatelliteDataField(
+                                label = stringResource(R.string.label_ephemeris),
+                                value = stringResource(if (sat.hasEphemerisData) R.string.yes else R.string.no),
+                                valueColor = if (sat.hasEphemerisData) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
             }
