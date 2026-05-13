@@ -20,7 +20,6 @@ import androidx.lifecycle.ViewModel
 import cn.fnrice.gpsinfo.data.GnssState
 import cn.fnrice.gpsinfo.data.LocationInfo
 import cn.fnrice.gpsinfo.data.SatelliteInfo
-import cn.fnrice.gpsinfo.data.SatelliteSnapshot
 import cn.fnrice.gpsinfo.data.MapProvider
 import cn.fnrice.gpsinfo.data.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,9 +37,6 @@ class GnssViewModel : ViewModel() {
 
     private val _state = MutableStateFlow(GnssState())
     val state: StateFlow<GnssState> = _state.asStateFlow()
-
-    private val _snapshots = MutableStateFlow<List<SatelliteSnapshot>>(emptyList())
-    val snapshots: StateFlow<List<SatelliteSnapshot>> = _snapshots.asStateFlow()
 
     private val _mapProvider = MutableStateFlow(MapProvider.AUTO)
     val mapProvider: StateFlow<MapProvider> = _mapProvider.asStateFlow()

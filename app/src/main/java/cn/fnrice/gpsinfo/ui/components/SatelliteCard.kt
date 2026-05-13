@@ -1,8 +1,6 @@
 package cn.fnrice.gpsinfo.ui.components
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -46,7 +44,7 @@ fun SatelliteCard(sat: SatelliteInfo) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .animateContentSize(animationSpec = spring(stiffness = Spring.StiffnessLow))
+                .animateContentSize()
                 .padding(horizontal = 10.dp, vertical = 6.dp)
         ) {
             Row(
@@ -173,8 +171,8 @@ fun SatelliteCard(sat: SatelliteInfo) {
 
             AnimatedVisibility(
                 visible = expanded,
-                enter = expandVertically(animationSpec = spring(stiffness = Spring.StiffnessLow)) + fadeIn(),
-                exit = shrinkVertically(animationSpec = spring(stiffness = Spring.StiffnessLow)) + fadeOut()
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
             ) {
                 Column {
                     Spacer(modifier = Modifier.height(12.dp))
