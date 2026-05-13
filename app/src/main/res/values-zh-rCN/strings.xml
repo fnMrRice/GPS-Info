@@ -26,7 +26,7 @@
     <string name="waiting_for_satellites">正在加载卫星数据...</string>
     <string name="no_satellites_detected">未检测到卫星</string>
     
-    <string name="sky_view_title">星图</string>
+    <string name="sky_view_title">卫星图</string>
     <string name="constellation_all">全部</string>
     <string name="filter_in_use">正在使用</string>
     <string name="filter_not_used">未使用</string>
@@ -38,8 +38,8 @@
     <string name="label_elev">仰角</string>
     <string name="label_azim">方位角</string>
     <string name="label_freq">频率</string>
-    <string name="label_cn0">载波比 (CN0)</string>
-    <string name="label_baseband_cn0">基带载波比</string>
+    <string name="label_cn0">载噪比 (CN0)</string>
+    <string name="label_baseband_cn0">基带载噪比</string>
     <string name="label_almanac">历书</string>
     <string name="label_ephemeris">星历</string>
     
@@ -60,8 +60,17 @@
     
     <string name="label_manufacturer">制造商</string>
     <string name="label_model">型号</string>
-    <string name="label_android_version">Android版本</string>
-    <string name="label_app_version">版本号</string>
+    <string name="label_android_version">Android 版本</string>
+    <string name="label_app_version">版本</string>
+    <string name="label_sensor_features">传感器功能</string>
+    <string name="label_accelerometer">加速度计</string>
+    <string name="label_gyroscope">陀螺仪</string>
+    <string name="label_magnetometer">磁力计</string>
+    <string name="label_pressure">气压计</string>
+    <string name="label_proximity">距离感应器</string>
+    <string name="label_light">光线感应器</string>
+    <string name="label_rotation_vector">旋转矢量</string>
+    <string name="label_gravity">重力感应器</string>
     <string name="developer_mode_enabled">您现在处于开发者模式！</string>
     <string name="developer_mode_steps">再点击 %1$d 次即可开启开发者模式。</string>
     <string name="developer_options">开发者选项</string>

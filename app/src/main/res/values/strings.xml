@@ -26,7 +26,7 @@
     <string name="waiting_for_satellites">Loading satellite data...</string>
     <string name="no_satellites_detected">No satellites detected</string>
  
-    <string name="sky_view_title">Sky Plot</string>
+    <string name="sky_view_title">Satellite Map</string>
     <string name="constellation_all">All</string>
     <string name="filter_in_use">In Use</string>
     <string name="filter_not_used">Not Used</string>
@@ -62,6 +62,15 @@
     <string name="label_model">Model</string>
     <string name="label_android_version">Android Version</string>
     <string name="label_app_version">Version</string>
+    <string name="label_sensor_features">Sensor Features</string>
+    <string name="label_accelerometer">Accelerometer</string>
+    <string name="label_gyroscope">Gyroscope</string>
+    <string name="label_magnetometer">Magnetometer</string>
+    <string name="label_pressure">Barometer</string>
+    <string name="label_proximity">Proximity Sensor</string>
+    <string name="label_light">Light Sensor</string>
+    <string name="label_rotation_vector">Rotation Vector</string>
+    <string name="label_gravity">Gravity Sensor</string>
     <string name="developer_mode_enabled">Developer mode enabled!</string>
     <string name="developer_mode_steps">You are now %1$d steps away from being a developer.</string>
     <string name="developer_options">Developer Options</string>

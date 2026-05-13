@@ -341,6 +341,20 @@ class GnssViewModel : ViewModel() {
         return null
     }
 
+    fun getSensorCapabilities(context: Context): SensorCapabilitiesInfo {
+        val sm = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        return SensorCapabilitiesInfo(
+            hasAccelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null,
+            hasGyroscope = sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null,
+            hasMagnetometer = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null,
+            hasPressure = sm.getDefaultSensor(Sensor.TYPE_PRESSURE) != null,
+            hasProximity = sm.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null,
+            hasLight = sm.getDefaultSensor(Sensor.TYPE_LIGHT) != null,
+            hasRotationVector = sm.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) != null,
+            hasGravity = sm.getDefaultSensor(Sensor.TYPE_GRAVITY) != null
+        )
+    }
+
     override fun onCleared() {
         super.onCleared()
         stopGnss()
@@ -354,3 +368,15 @@ data class GnssCapabilitiesInfo(
     val hasMeasurementCorrections: Boolean,
     val hasMeasurementCorrelationVectors: Boolean,
 )
+
+data class SensorCapabilitiesInfo(
+    val hasAccelerometer: Boolean,
+    val hasGyroscope: Boolean,
+    val hasMagnetometer: Boolean,
+    val hasPressure: Boolean,
+    val hasProximity: Boolean,
+    val hasLight: Boolean,
+    val hasRotationVector: Boolean,
+    val hasGravity: Boolean
+)
+       

@@ -1,5 +1,6 @@
 package cn.fnrice.gpsinfo.ui.screen
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -121,6 +122,7 @@ private fun MapSettingsCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable { onProviderSelected(provider) }
                         .padding(vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)

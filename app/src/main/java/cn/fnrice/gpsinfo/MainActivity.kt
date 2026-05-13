@@ -28,6 +28,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -138,15 +147,27 @@ fun GPSInfoApp() {
                     },
                 )
             } else {
-                when (currentDestination) {
-                    AppDestinations.SATELLITES -> HomeScreen(viewModel, innerPadding)
-                    AppDestinations.MAP -> MapScreen(viewModel, innerPadding)
-                    AppDestinations.DEVICE -> DeviceScreen(viewModel, innerPadding, onNavigateToSettings = {
-                        currentDestination = AppDestinations.SETTINGS
-                    })
-                    AppDestinations.SETTINGS -> SettingsScreen(viewModel, onBack = {
-                        currentDestination = AppDestinations.DEVICE
-                    })
+                AnimatedContent(
+                    targetState = currentDestination,
+                    transitionSpec = {
+                        if (targetState.ordinal > initialState.ordinal) {
+                            (slideInHorizontally { it } + fadeIn()).togetherWith(slideOutHorizontally { -it } + fadeOut())
+                        } else {
+                            (slideInHorizontally { -it } + fadeIn()).togetherWith(slideOutHorizontally { it } + fadeOut())
+                        }
+                    },
+                    label = "NavigationTransition"
+                ) { destination ->
+                    when (destination) {
+                        AppDestinations.SATELLITES -> HomeScreen(viewModel, innerPadding)
+                        AppDestinations.MAP -> MapScreen(viewModel, innerPadding)
+                        AppDestinations.DEVICE -> DeviceScreen(viewModel, innerPadding, onNavigateToSettings = {
+                            currentDestination = AppDestinations.SETTINGS
+                        })
+                        AppDestinations.SETTINGS -> SettingsScreen(viewModel, onBack = {
+                            currentDestination = AppDestinations.DEVICE
+                        })
+                    }
                 }
             }
         }

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import cn.fnrice.gpsinfo.R
 import cn.fnrice.gpsinfo.viewmodel.GnssCapabilitiesInfo
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
+import cn.fnrice.gpsinfo.viewmodel.SensorCapabilitiesInfo
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -44,6 +45,7 @@ import kotlinx.coroutines.launch
 fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues, onNavigateToSettings: () -> Unit) {
     val context = LocalContext.current
     val capabilities = remember { viewModel.getGnssCapabilities(context) }
+    val sensorCaps = remember { viewModel.getSensorCapabilities(context) }
     val isDeveloperMode by viewModel.isDeveloperMode.collectAsState()
     var clickCount by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
@@ -55,9 +57,10 @@ fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues, onNaviga
                 viewModel.setDeveloperMode(true)
                 ToastUtils.showToast(context, R.string.developer_mode_enabled)
             } else if (clickCount > 2) {
+                val stepsLeft = 7 - clickCount
                 ToastUtils.showToast(
                     context,
-                    context.getString(R.string.developer_mode_steps, 7 - clickCount)
+                    context.getString(R.string.developer_mode_steps, stepsLeft)
                 )
             }
         } else {
@@ -92,6 +95,8 @@ fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues, onNaviga
                 )
             }
         }
+
+        SensorCapabilitiesCard(sensorCaps)
 
         SettingsEntryCard(onNavigateToSettings)
         
@@ -143,6 +148,24 @@ private fun GnssCapabilitiesCard(caps: GnssCapabilitiesInfo) {
             InfoRow(stringResource(R.string.label_antenna_info), caps.hasAntennaInfo.yesNo())
             InfoRow(stringResource(R.string.label_meas_corrections), caps.hasMeasurementCorrections.yesNo())
             InfoRow(stringResource(R.string.label_correlation_vectors), caps.hasMeasurementCorrelationVectors.yesNo())
+        }
+    }
+}
+
+@Composable
+private fun SensorCapabilitiesCard(caps: SensorCapabilitiesInfo) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(stringResource(R.string.label_sensor_features), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            InfoRow(stringResource(R.string.label_accelerometer), caps.hasAccelerometer.yesNo())
+            InfoRow(stringResource(R.string.label_gyroscope), caps.hasGyroscope.yesNo())
+            InfoRow(stringResource(R.string.label_magnetometer), caps.hasMagnetometer.yesNo())
+            InfoRow(stringResource(R.string.label_pressure), caps.hasPressure.yesNo())
+            InfoRow(stringResource(R.string.label_proximity), caps.hasProximity.yesNo())
+            InfoRow(stringResource(R.string.label_light), caps.hasLight.yesNo())
+            InfoRow(stringResource(R.string.label_rotation_vector), caps.hasRotationVector.yesNo())
+            InfoRow(stringResource(R.string.label_gravity), caps.hasGravity.yesNo())
         }
     }
 }
