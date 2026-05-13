@@ -1,6 +1,11 @@
 package cn.fnrice.gpsinfo.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,15 +16,20 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -30,6 +40,59 @@ import cn.fnrice.gpsinfo.data.DefaultApiKeys
 import cn.fnrice.gpsinfo.data.MapProvider
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
 import kotlinx.coroutines.launch
+
+@Composable
+fun SettingsEntryCard(onClick: () -> Unit) {
+    OutlinedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp)),
+        shape = RoundedCornerShape(16.dp),
+        border = CardDefaults.outlinedCardBorder().copy(
+            brush = SolidColor(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+        ),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        ListItem(
+            modifier = Modifier.clickable(onClick = onClick),
+            headlineContent = {
+                Text(
+                    stringResource(R.string.settings_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            },
+            leadingContent = {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+            },
+            trailingContent = {
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            colors = ListItemDefaults.colors(
+                containerColor = androidx.compose.ui.graphics.Color.Transparent
+            )
+        )
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,19 +125,9 @@ fun LogViewDialog(viewModel: GnssViewModel, onDismiss: () -> Unit) {
                             }
                         },
                         actions = {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(end = 8.dp)
-                                    .clickable { autoScroll = !autoScroll }
-                            ) {
-                                Text(
-                                    stringResource(R.string.logs_auto_scroll),
-                                    style = MaterialTheme.typography.labelMedium
-                                )
-                                Checkbox(
-                                    checked = autoScroll,
-                                    onCheckedChange = { autoScroll = it }
-                                )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(stringResource(R.string.logs_auto_scroll), style = MaterialTheme.typography.labelMedium)
+                                Checkbox(checked = autoScroll, onCheckedChange = { autoScroll = it })
                             }
                             IconButton(onClick = { viewModel.clearLogs() }) {
                                 Icon(Icons.Default.Delete, contentDescription = "Clear Logs")
@@ -83,33 +136,21 @@ fun LogViewDialog(viewModel: GnssViewModel, onDismiss: () -> Unit) {
                     )
                 }
             ) { innerPadding ->
-                Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-                    if (logs.isEmpty()) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                stringResource(R.string.logs_empty),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    } else {
-                        LazyColumn(
-                            state = listState,
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            items(logs) { log ->
-                                Text(
-                                    text = log,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                                )
-                            }
-                        }
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .padding(horizontal = 16.dp),
+                    contentPadding = PaddingValues(vertical = 8.dp)
+                ) {
+                    items(logs) { log ->
+                        Text(
+                            text = log,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(vertical = 2.dp),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             }
@@ -260,80 +301,59 @@ fun ApiKeyItem(
     onTestClick: suspend () -> Boolean
 ) {
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
-    val testSuccess = stringResource(R.string.test_api_success)
-    val testFailed = stringResource(R.string.test_api_fail)
+    var isTesting by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-            .padding(12.dp)
-    ) {
+    Column(modifier = Modifier.fillMaxWidth().animateContentSize()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                label,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold
-            )
+            Text(label, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    stringResource(R.string.use_custom_key),
-                    style = MaterialTheme.typography.labelMedium
-                )
+                Text(stringResource(R.string.use_custom_key), style = MaterialTheme.typography.labelSmall)
                 Switch(
                     checked = useCustom,
                     onCheckedChange = onUseCustomChange,
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.scale(0.7f)
                 )
             }
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         if (useCustom) {
             OutlinedTextField(
                 value = apiKey,
                 onValueChange = onApiKeyChange,
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("API Key") },
+                placeholder = { Text(stringResource(R.string.placeholder_no_data), style = MaterialTheme.typography.bodySmall) },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp)
+                textStyle = MaterialTheme.typography.bodySmall
             )
         } else {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(
-                    text = defaultKey,
-                    modifier = Modifier.padding(12.dp),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            Text(
+                text = stringResource(R.string.current_provider, defaultKey.take(8) + "..."),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedButton(
+        Button(
             onClick = {
                 scope.launch {
-                    val result = onTestClick()
-                    ToastUtils.showToast(context, if (result) testSuccess else testFailed)
+                    isTesting = true
+                    onTestClick()
+                    isTesting = false
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
+            enabled = !isTesting,
+            modifier = Modifier.padding(top = 4.dp).height(32.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
         ) {
-            Text(stringResource(R.string.test_api))
+            if (isTesting) {
+                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+            } else {
+                Text(stringResource(R.string.test_api), style = MaterialTheme.typography.labelMedium)
+            }
         }
     }
 }

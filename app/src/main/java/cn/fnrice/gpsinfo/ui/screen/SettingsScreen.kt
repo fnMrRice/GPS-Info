@@ -38,10 +38,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import cn.fnrice.gpsinfo.R
-import cn.fnrice.gpsinfo.ui.components.ApiKeysCard
 import cn.fnrice.gpsinfo.ui.components.LogViewDialog
 import cn.fnrice.gpsinfo.ui.components.MapSettingsCard
 import cn.fnrice.gpsinfo.ui.components.SettingsSectionCard
+import cn.fnrice.gpsinfo.ui.components.ApiKeysCard
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
