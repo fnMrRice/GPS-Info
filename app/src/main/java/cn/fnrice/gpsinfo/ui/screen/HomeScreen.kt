@@ -47,7 +47,7 @@ private val constellationColors = mapOf(
     "GPS" to Color(0xFF4CAF50),
     "GLONASS" to Color(0xFFFF9800),
     "Galileo" to Color(0xFF2196F3),
-    "BeiDou" to Color(0xFFF44336),
+    "北斗" to Color(0xFFF44336),
     "QZSS" to Color(0xFF9C27B0),
     "SBAS" to Color(0xFF795548),
     "IRNSS" to Color(0xFF00BCD4),
@@ -57,6 +57,7 @@ private val constellationColors = mapOf(
 @Composable
 fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     val state by viewModel.state.collectAsState()
+    val actualMapProvider by viewModel.actualMapProvider.collectAsState()
 
     var filterConstellation by remember { mutableStateOf<String?>(null) }
     val filteredSatellites = state.satellites.filter {
@@ -73,7 +74,7 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
         contentPadding = PaddingValues(vertical = 12.dp),
     ) {
         item {
-            StatusHeader(state)
+            StatusHeader(state, actualMapProvider)
         }
 
         if (state.location != null) {
@@ -120,18 +121,33 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
 }
 
 @Composable
-private fun StatusHeader(state: GnssState) {
+private fun StatusHeader(state: GnssState, mapProvider: cn.fnrice.gpsinfo.data.MapProvider) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
             Text("Satellites", style = MaterialTheme.typography.headlineSmall)
-            Text(
-                "${state.satellitesUsedInFix} used / ${state.satellitesTotal} visible",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "${state.satellitesUsedInFix} used / ${state.satellitesTotal} visible",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
+                    Text(
+                        mapProvider.displayName,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+            }
         }
         if (!state.isLocationEnabled) {
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
@@ -240,18 +256,18 @@ private fun DrawScope.drawSkyPlot(satellites: List<SatelliteInfo>, diameter: Flo
         val x = center.x + (r * sin(azimRad)).toFloat()
         val y = center.y - (r * cos(azimRad)).toFloat()
 
-        val color = constellationColors[sat.constellationName] ?: Color.White
+        val satColor = constellationColors[sat.constellationName] ?: Color.White
         val dotRadius = if (sat.usedInFix) 8f else 5f
 
-        drawCircle(color = color, radius = dotRadius, center = Offset(x, y))
+        drawCircle(color = satColor, radius = dotRadius, center = Offset(x, y))
         if (sat.usedInFix) {
-            drawCircle(color = color.copy(alpha = 0.3f), radius = dotRadius + 4f, center = Offset(x, y))
+            drawCircle(color = satColor.copy(alpha = 0.3f), radius = dotRadius + 4f, center = Offset(x, y))
         }
 
         drawContext.canvas.nativeCanvas.apply {
             val paint = android.graphics.Paint().apply {
                 textSize = 16f
-                color = color.toArgb()
+                color = satColor.toArgb()
                 textAlign = android.graphics.Paint.Align.CENTER
             }
             drawText("${sat.svid}", x, y - dotRadius - 2, paint)

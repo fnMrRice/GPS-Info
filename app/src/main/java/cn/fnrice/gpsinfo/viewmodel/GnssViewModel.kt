@@ -14,9 +14,20 @@ import cn.fnrice.gpsinfo.data.GnssState
 import cn.fnrice.gpsinfo.data.LocationInfo
 import cn.fnrice.gpsinfo.data.SatelliteInfo
 import cn.fnrice.gpsinfo.data.SatelliteSnapshot
+import cn.fnrice.gpsinfo.data.MapProvider
+import cn.fnrice.gpsinfo.data.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import androidx.lifecycle.viewModelScope
+
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import java.net.InetSocketAddress
+import java.net.Socket
 
 class GnssViewModel : ViewModel() {
 
@@ -26,9 +37,55 @@ class GnssViewModel : ViewModel() {
     private val _snapshots = MutableStateFlow<List<SatelliteSnapshot>>(emptyList())
     val snapshots: StateFlow<List<SatelliteSnapshot>> = _snapshots.asStateFlow()
 
+    private val _mapProvider = MutableStateFlow(MapProvider.AUTO)
+    val mapProvider: StateFlow<MapProvider> = _mapProvider.asStateFlow()
+
+    private val _actualMapProvider = MutableStateFlow(MapProvider.GOOGLE)
+    val actualMapProvider: StateFlow<MapProvider> = _actualMapProvider.asStateFlow()
+
+    private var settingsRepository: SettingsRepository? = null
+
     private var locationManager: LocationManager? = null
     private var gnssCallback: GnssStatus.Callback? = null
     private var locationListener: LocationListener? = null
+
+    fun initSettings(context: Context) {
+        if (settingsRepository == null) {
+            val repo = SettingsRepository(context.applicationContext)
+            settingsRepository = repo
+            viewModelScope.launch {
+                repo.mapProviderFlow.collect { provider ->
+                    _mapProvider.value = provider
+                    updateActualMapProvider(provider)
+                }
+            }
+        }
+    }
+
+    private suspend fun updateActualMapProvider(provider: MapProvider) {
+        if (provider != MapProvider.AUTO) {
+            _actualMapProvider.value = provider
+        } else {
+            // Auto mode: Test Google connectivity
+            val isGoogleReachable = withContext(Dispatchers.IO) {
+                try {
+                    Socket().use { socket ->
+                        socket.connect(InetSocketAddress("www.google.com", 80), 2000)
+                        true
+                    }
+                } catch (e: Exception) {
+                    false
+                }
+            }
+            _actualMapProvider.value = if (isGoogleReachable) MapProvider.GOOGLE else MapProvider.AMAP
+        }
+    }
+
+    fun setMapProvider(provider: MapProvider) {
+        viewModelScope.launch {
+            settingsRepository?.setMapProvider(provider)
+        }
+    }
 
     fun updatePermissionState(hasPermission: Boolean) {
         _state.value = _state.value.copy(hasPermission = hasPermission)
@@ -118,8 +175,12 @@ class GnssViewModel : ViewModel() {
                 hasNavigationMessages = caps.hasNavigationMessages(),
                 hasMeasurements = caps.hasMeasurements(),
                 hasAntennaInfo = caps.hasAntennaInfo(),
-                hasMeasurementCorrections = caps.hasMeasurementCorrections(),
-                hasMeasurementCorrelationVectors = caps.hasMeasurementCorrelationVectors(),
+                hasMeasurementCorrections = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                     caps.hasMeasurementCorrections()
+                } else false,
+                hasMeasurementCorrelationVectors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    caps.hasMeasurementCorrelationVectors()
+                } else false,
             )
         }
         return null

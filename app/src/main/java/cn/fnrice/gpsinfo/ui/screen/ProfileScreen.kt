@@ -24,10 +24,16 @@ import androidx.compose.ui.unit.dp
 import cn.fnrice.gpsinfo.viewmodel.GnssCapabilitiesInfo
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.material3.RadioButton
+import cn.fnrice.gpsinfo.data.MapProvider
+
 @Composable
 fun ProfileScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     val context = LocalContext.current
     val capabilities = remember { viewModel.getGnssCapabilities(context) }
+    val currentMapProvider by viewModel.mapProvider.collectAsState()
 
     Column(
         modifier = Modifier
@@ -43,6 +49,11 @@ fun ProfileScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
             modifier = Modifier.padding(top = 12.dp),
         )
 
+        MapSettingsCard(
+            currentProvider = currentMapProvider,
+            onProviderSelected = { viewModel.setMapProvider(it) }
+        )
+
         DeviceInfoCard(context)
 
         if (capabilities != null) {
@@ -54,6 +65,35 @@ fun ProfileScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                     modifier = Modifier.padding(12.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MapSettingsCard(
+    currentProvider: MapProvider,
+    onProviderSelected: (MapProvider) -> Unit
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text("Map Settings", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            
+            MapProvider.values().forEach { provider ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    RadioButton(
+                        selected = currentProvider == provider,
+                        onClick = { onProviderSelected(provider) }
+                    )
+                    Text(provider.displayName, style = MaterialTheme.typography.bodyMedium)
+                }
             }
         }
     }

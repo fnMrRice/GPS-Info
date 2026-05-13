@@ -17,7 +17,7 @@ data class SatelliteInfo(
             GnssStatus.CONSTELLATION_SBAS -> "SBAS"
             GnssStatus.CONSTELLATION_GLONASS -> "GLONASS"
             GnssStatus.CONSTELLATION_QZSS -> "QZSS"
-            GnssStatus.CONSTELLATION_BEIDOU -> "BeiDou"
+            GnssStatus.CONSTELLATION_BEIDOU -> "北斗"
             GnssStatus.CONSTELLATION_GALILEO -> "Galileo"
             GnssStatus.CONSTELLATION_IRNSS -> "IRNSS"
             else -> "Unknown"

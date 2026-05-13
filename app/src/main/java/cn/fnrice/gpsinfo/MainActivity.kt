@@ -24,7 +24,7 @@ import androidx.compose.material.icons.filled.SatelliteAlt
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -73,6 +73,10 @@ fun GPSInfoApp() {
     val viewModel: GnssViewModel = viewModel()
     val context = LocalContext.current
 
+    LaunchedEffect(Unit) {
+        viewModel.initSettings(context)
+    }
+
     var hasLocationPermission by rememberSaveable {
         mutableStateOf(
             ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
@@ -100,12 +104,12 @@ fun GPSInfoApp() {
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
-            AppDestinations.entries.forEach {
+            AppDestinations.entries.forEach { destination ->
                 item(
-                    icon = { Icon(it.icon, contentDescription = it.label) },
-                    label = { Text(it.label) },
-                    selected = it == currentDestination,
-                    onClick = { currentDestination = it },
+                    icon = { Icon(destination.icon, contentDescription = destination.label) },
+                    label = { Text(destination.label) },
+                    selected = destination == currentDestination,
+                    onClick = { currentDestination = destination },
                 )
             }
         }
