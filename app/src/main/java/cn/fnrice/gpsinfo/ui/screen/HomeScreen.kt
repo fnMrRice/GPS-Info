@@ -72,15 +72,14 @@ enum class SatelliteFilterStatus {
 @Composable
 fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     val state by viewModel.state.collectAsState()
-    val actualMapProvider by viewModel.actualMapProvider.collectAsState()
-
     var filterConstellation by remember { mutableStateOf<String?>(null) }
     var filterStatus by remember { mutableStateOf(SatelliteFilterStatus.ALL) }
     var skyViewExpanded by remember { mutableStateOf(false) }
     var isFilterVisible by remember { mutableStateOf(false) }
     var isCompassEnabled by remember { mutableStateOf(false) }
-
     val context = LocalContext.current
+
+    val actualMapProvider by viewModel.actualMapProvider.collectAsState()
     val filteredSatellites = remember(state.satellites, filterConstellation, filterStatus, context) {
         val list = state.satellites.filter {
             val matchesConstellation = filterConstellation == null || it.getConstellationName(context) == filterConstellation
@@ -123,9 +122,7 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                 }
             })
             .map { type ->
-                // Create a dummy SatelliteInfo to get the localized name
-                val dummy = SatelliteInfo(svid = 0, constellationType = type, cn0DbHz = 0f, elevationDegrees = 0f, azimuthDegrees = 0f, usedInFix = false)
-                dummy.getConstellationName(context)
+                SatelliteInfo.getConstellationNameStatic(context, type)
             }
     }
 
@@ -316,4 +313,3 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
         }
     }
 }
-                 

@@ -218,6 +218,7 @@ class GnssViewModel : ViewModel() {
 
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     fun startGnss(context: Context) {
+        val startTime = System.currentTimeMillis()
         addLog("startGnss called")
         if (gnssCallback != null) {
             addLog("GNSS already started, ignoring")
@@ -225,6 +226,20 @@ class GnssViewModel : ViewModel() {
         }
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         locationManager = lm
+
+        // Check if cached location is available to speed up initial display
+        try {
+            val lastKnownLocation = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER) 
+                ?: lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            if (lastKnownLocation != null) {
+                addLog("Last known location found: ${lastKnownLocation.provider}")
+                _state.value = _state.value.copy(
+                    location = LocationInfo.fromLocation(lastKnownLocation)
+                )
+            }
+        } catch (e: SecurityException) {
+            addLog("SecurityException when getting last known location: ${e.message}")
+        }
 
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         this.sensorManager = sensorManager
@@ -254,8 +269,14 @@ class GnssViewModel : ViewModel() {
             sensorManager.registerListener(sensorListener, it, SensorManager.SENSOR_DELAY_UI)
         }
 
+        var firstSatelliteStatusReceived = false
         val callback = object : GnssStatus.Callback() {
             override fun onSatelliteStatusChanged(status: GnssStatus) {
+                if (!firstSatelliteStatusReceived) {
+                    val timeTaken = System.currentTimeMillis() - startTime
+                    addLog("First GNSS Status received after ${timeTaken}ms. Satellite count: ${status.satelliteCount}")
+                    firstSatelliteStatusReceived = true
+                }
                 val satellites = (0 until status.satelliteCount).map { i ->
                     val hasCarrier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         status.hasCarrierFrequencyHz(i)
@@ -294,7 +315,9 @@ class GnssViewModel : ViewModel() {
 
             override fun onStarted() {}
             override fun onStopped() {}
-            override fun onFirstFix(ttffMillis: Int) {}
+            override fun onFirstFix(ttffMillis: Int) {
+                addLog("GNSS First Fix in ${ttffMillis}ms")
+            }
         }
         gnssCallback = callback
         lm.registerGnssStatusCallback(callback, Handler(Looper.getMainLooper()))
@@ -317,6 +340,14 @@ class GnssViewModel : ViewModel() {
         }
         locationListener = listener
         lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 0f, listener, Looper.getMainLooper())
+        // Also request from NETWORK_PROVIDER for faster initial location
+        try {
+            if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000L, 0f, listener, Looper.getMainLooper())
+            }
+        } catch (e: Exception) {
+            addLog("Network provider not available: ${e.message}")
+        }
     }
 
     fun stopGnss() {

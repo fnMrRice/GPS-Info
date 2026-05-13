@@ -18,17 +18,23 @@ data class SatelliteInfo(
     val hasEphemerisData: Boolean = false,
 ) {
     fun getConstellationName(context: android.content.Context): String {
-        val resId = when (constellationType) {
-            GnssStatus.CONSTELLATION_GPS -> cn.fnrice.gpsinfo.R.string.constellation_gps
-            GnssStatus.CONSTELLATION_SBAS -> cn.fnrice.gpsinfo.R.string.constellation_sbas
-            GnssStatus.CONSTELLATION_GLONASS -> cn.fnrice.gpsinfo.R.string.constellation_glonass
-            GnssStatus.CONSTELLATION_QZSS -> cn.fnrice.gpsinfo.R.string.constellation_qzss
-            GnssStatus.CONSTELLATION_BEIDOU -> cn.fnrice.gpsinfo.R.string.constellation_beidou
-            GnssStatus.CONSTELLATION_GALILEO -> cn.fnrice.gpsinfo.R.string.constellation_galileo
-            GnssStatus.CONSTELLATION_IRNSS -> cn.fnrice.gpsinfo.R.string.constellation_irnss
-            else -> cn.fnrice.gpsinfo.R.string.constellation_unknown
+        return getConstellationNameStatic(context, constellationType)
+    }
+
+    companion object {
+        fun getConstellationNameStatic(context: android.content.Context, constellationType: Int): String {
+            val resId = when (constellationType) {
+                GnssStatus.CONSTELLATION_GPS -> cn.fnrice.gpsinfo.R.string.constellation_gps
+                GnssStatus.CONSTELLATION_SBAS -> cn.fnrice.gpsinfo.R.string.constellation_sbas
+                GnssStatus.CONSTELLATION_GLONASS -> cn.fnrice.gpsinfo.R.string.constellation_glonass
+                GnssStatus.CONSTELLATION_QZSS -> cn.fnrice.gpsinfo.R.string.constellation_qzss
+                GnssStatus.CONSTELLATION_BEIDOU -> cn.fnrice.gpsinfo.R.string.constellation_beidou
+                GnssStatus.CONSTELLATION_GALILEO -> cn.fnrice.gpsinfo.R.string.constellation_galileo
+                GnssStatus.CONSTELLATION_IRNSS -> cn.fnrice.gpsinfo.R.string.constellation_irnss
+                else -> cn.fnrice.gpsinfo.R.string.constellation_unknown
+            }
+            return context.getString(resId)
         }
-        return context.getString(resId)
     }
 }
 
