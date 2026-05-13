@@ -30,9 +30,19 @@ android {
         buildConfigField("String", "BAIDU_MAPS_KEY", "\"$baiduApiKey\"")
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(project.findProperty("RELEASE_STORE_FILE") ?: "release.jks")
+            storePassword = project.findProperty("RELEASE_STORE_PASSWORD")?.toString() ?: ""
+            keyAlias = project.findProperty("RELEASE_KEY_ALIAS")?.toString() ?: ""
+            keyPassword = project.findProperty("RELEASE_KEY_PASSWORD")?.toString() ?: ""
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
