@@ -83,7 +83,7 @@ fun AppCard(
             brush = SolidColor(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         )
     ) {
-        Column(modifier = Modifier.animateContentSize()) {
+        Column(modifier = Modifier.animateContentSize(animationSpec = spring(stiffness = Spring.StiffnessLow))) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -123,8 +123,8 @@ fun AppCard(
             if (isExpandable) {
                 AnimatedVisibility(
                     visible = isExpanded,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
+                    enter = expandVertically(animationSpec = spring(stiffness = Spring.StiffnessLow)) + fadeIn(),
+                    exit = shrinkVertically(animationSpec = spring(stiffness = Spring.StiffnessLow)) + fadeOut()
                 ) {
                     Column(
                         modifier = Modifier

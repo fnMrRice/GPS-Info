@@ -22,8 +22,8 @@
     <string name="label_bearing">Bearing</string>
     <string name="label_source">Source</string>
     <string name="placeholder_no_data">---</string>
-    <string name="waiting_for_location">Waiting for location...</string>
-    <string name="waiting_for_satellites">Loading satellite data...</string>
+    <string name="waiting_for_location">Waiting for location…</string>
+    <string name="waiting_for_satellites">Loading satellite data…</string>
     <string name="no_satellites_detected">No satellites detected</string>
  
     <string name="sky_view_title">Satellite Map</string>
@@ -55,7 +55,7 @@
     <string name="map_provider_google">Google</string>
     <string name="map_provider_amap">AMAP</string>
     <string name="map_provider_baidu">Baidu</string>
-    <string name="map_integration_soon">Map integration coming soon...</string>
+    <string name="map_integration_soon">Map integration coming soon…</string>
     <string name="current_provider">Current Provider: %1$s</string>
 
     <string name="label_manufacturer">Manufacturer</string>

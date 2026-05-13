@@ -1,5 +1,6 @@
 package cn.fnrice.gpsinfo.viewmodel
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.hardware.Sensor
@@ -14,6 +15,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.lifecycle.ViewModel
 import cn.fnrice.gpsinfo.data.GnssState
 import cn.fnrice.gpsinfo.data.LocationInfo
@@ -220,6 +222,7 @@ class GnssViewModel : ViewModel() {
         _logs.value = emptyList()
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     fun startGnss(context: Context) {
         addLog("startGnss called")
         if (gnssCallback != null) {

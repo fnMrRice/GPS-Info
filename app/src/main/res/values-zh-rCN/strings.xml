@@ -22,8 +22,8 @@
     <string name="label_bearing">方位角</string>
     <string name="label_source">来源</string>
     <string name="placeholder_no_data">---</string>
-    <string name="waiting_for_location">正在等待定位...</string>
-    <string name="waiting_for_satellites">正在加载卫星数据...</string>
+    <string name="waiting_for_location">正在等待定位…</string>
+    <string name="waiting_for_satellites">正在加载卫星数据…</string>
     <string name="no_satellites_detected">未检测到卫星</string>
     
     <string name="sky_view_title">卫星图</string>
@@ -55,7 +55,7 @@
     <string name="map_provider_google">Google</string>
     <string name="map_provider_amap">高德</string>
     <string name="map_provider_baidu">百度</string>
-    <string name="map_integration_soon">地图集成即将推出...</string>
+    <string name="map_integration_soon">地图集成即将推出…</string>
     <string name="current_provider">当前提供商: %1$s</string>
     
     <string name="label_manufacturer">制造商</string>
