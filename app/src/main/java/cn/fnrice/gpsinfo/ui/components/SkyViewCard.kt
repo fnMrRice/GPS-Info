@@ -1,6 +1,5 @@
 package cn.fnrice.gpsinfo.ui.components
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -118,7 +117,7 @@ fun SkyViewCard(
                 }
 
                 // 叠加位置信息 Overlay
-                AnimatedVisibility(
+                androidx.compose.animation.AnimatedVisibility(
                     visible = isMapInfoExpanded,
                     enter = fadeIn(),
                     exit = fadeOut()
