@@ -37,7 +37,6 @@ import cn.fnrice.gpsinfo.data.SatelliteInfo
 import cn.fnrice.gpsinfo.ui.components.LocationCard
 import cn.fnrice.gpsinfo.ui.components.SatelliteCard
 import cn.fnrice.gpsinfo.ui.components.SatelliteFilterSection
-import cn.fnrice.gpsinfo.ui.components.SensorCard
 import cn.fnrice.gpsinfo.ui.components.SkyViewCard
 import cn.fnrice.gpsinfo.ui.components.StatusHeader
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
@@ -59,7 +58,6 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     var isFilterVisible by remember { mutableStateOf(false) }
     var isCompassEnabled by remember { mutableStateOf(false) }
     var isMapInfoExpanded by remember { mutableStateOf(false) }
-    var sensorCardExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var showSearchHint by remember { mutableStateOf(false) }
 
@@ -165,14 +163,6 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
 
         item {
             LocationCard(state)
-        }
-
-        item {
-            SensorCard(
-                state = state,
-                isExpanded = sensorCardExpanded,
-                onExpandChange = { sensorCardExpanded = it }
-            )
         }
 
         item {

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.SatelliteAlt
+import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -58,6 +59,7 @@ import cn.fnrice.gpsinfo.ui.components.ToastUtils
 import cn.fnrice.gpsinfo.ui.screen.DeviceScreen
 import cn.fnrice.gpsinfo.ui.screen.HomeScreen
 import cn.fnrice.gpsinfo.ui.screen.MapScreen
+import cn.fnrice.gpsinfo.ui.screen.SensorScreen
 import cn.fnrice.gpsinfo.ui.screen.SettingsDialog
 import cn.fnrice.gpsinfo.ui.theme.GPSInfoTheme
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
@@ -79,6 +81,7 @@ enum class AppDestinations(
     val icon: ImageVector,
 ) {
     SATELLITES(R.string.nav_home, Icons.Default.SatelliteAlt),
+    SENSORS(R.string.nav_sensors, Icons.Default.Sensors),
     DEVICE(R.string.nav_profile, Icons.Default.Devices);
 
     companion object {
@@ -221,6 +224,7 @@ fun GPSInfoApp() {
                 ) { destination ->
                     when (destination) {
                         AppDestinations.SATELLITES -> HomeScreen(viewModel, innerPadding)
+                        AppDestinations.SENSORS -> SensorScreen(viewModel, innerPadding)
                         AppDestinations.DEVICE -> DeviceScreen(viewModel, innerPadding, onNavigateToSettings = {
                             showSettingsDialog = true
                         })

@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">GPS Info</string>
     <string name="nav_home">Satellites</string>
+    <string name="nav_sensors">Sensors</string>
     <string name="nav_map">Map</string>
     <string name="nav_profile">Device</string>
 

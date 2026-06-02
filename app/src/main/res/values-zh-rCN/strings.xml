@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">GPS信息</string>
     <string name="nav_home">卫星</string>
+    <string name="nav_sensors">传感器</string>
     <string name="nav_map">地图</string>
     <string name="nav_profile">设备</string>
     
