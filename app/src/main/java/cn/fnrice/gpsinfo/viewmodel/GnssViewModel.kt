@@ -67,6 +67,8 @@ class GnssViewModel : ViewModel() {
     private val _isMockMode = MutableStateFlow(false)
     val isMockMode: StateFlow<Boolean> = _isMockMode.asStateFlow()
 
+    private var sensorUiActive = false
+
     private var mockJob: Job? = null
 
     private val _logs = MutableStateFlow<List<String>>(emptyList())
@@ -211,6 +213,10 @@ class GnssViewModel : ViewModel() {
                 stopMockGnss()
             }
         }
+    }
+
+    fun setSensorUiActive(active: Boolean) {
+        sensorUiActive = active
     }
 
     private fun startMockGnss() {
@@ -372,13 +378,14 @@ class GnssViewModel : ViewModel() {
                 if (now - lastSensorFlushTime >= sensorThrottleMs) {
                     lastSensorFlushTime = now
                     val newAzimuth = pendingAzimuth
+                    val updateMap = sensorUiActive
                     if (newAzimuth != null) {
                         _state.value = _state.value.copy(
                             azimuth = newAzimuth,
-                            sensorValues = _state.value.sensorValues + pendingSensorValues.toMap()
+                            sensorValues = if (updateMap) _state.value.sensorValues + pendingSensorValues.toMap() else _state.value.sensorValues
                         )
                         pendingAzimuth = null
-                    } else {
+                    } else if (updateMap) {
                         _state.value = _state.value.copy(
                             sensorValues = _state.value.sensorValues + pendingSensorValues.toMap()
                         )
