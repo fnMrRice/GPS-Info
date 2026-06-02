@@ -33,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cn.fnrice.gpsinfo.R
 import cn.fnrice.gpsinfo.ui.components.EnvironmentCard
+import cn.fnrice.gpsinfo.ui.components.MotionAxesView
 import cn.fnrice.gpsinfo.ui.components.MotionCard
 import cn.fnrice.gpsinfo.ui.components.OrientationCard
 import cn.fnrice.gpsinfo.ui.components.Phone3DView
@@ -53,6 +54,10 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     var showHelpDialog by remember { mutableStateOf(false) }
     var showOrientationHelp by remember { mutableStateOf(false) }
     var showPhone3D by remember { mutableStateOf(false) }
+    var showMotionAxes by remember { mutableStateOf(false) }
+    var motionX by remember { mutableStateOf(0f) }
+    var motionY by remember { mutableStateOf(0f) }
+    var motionZ by remember { mutableStateOf(0f) }
 
     LaunchedEffect(orientationExpanded, motionExpanded, environmentExpanded) {
         viewModel.setSensorUiActive(orientationExpanded || motionExpanded || environmentExpanded)
@@ -92,7 +97,10 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
         MotionCard(
             sensorValues = sensorValues,
             isExpanded = motionExpanded,
-            onExpandChange = { motionExpanded = it }
+            onExpandChange = { motionExpanded = it },
+            onMotionClick = { x, y, z ->
+                motionX = x; motionY = y; motionZ = z; showMotionAxes = true
+            }
         )
 
         EnvironmentCard(
@@ -137,6 +145,24 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                 Text(
                     text = stringResource(android.R.string.ok),
                     modifier = Modifier.clickable { showPhone3D = false },
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        )
+    }
+
+    // 运动坐标轴弹窗
+    if (showMotionAxes) {
+        AlertDialog(
+            onDismissRequest = { showMotionAxes = false },
+            title = { Text(stringResource(R.string.sensor_name_accelerometer)) },
+            text = {
+                MotionAxesView(x = motionX, y = motionY, z = motionZ)
+            },
+            confirmButton = {
+                Text(
+                    text = stringResource(android.R.string.ok),
+                    modifier = Modifier.clickable { showMotionAxes = false },
                     color = MaterialTheme.colorScheme.primary
                 )
             }

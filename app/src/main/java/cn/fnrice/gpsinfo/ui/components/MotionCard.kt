@@ -3,15 +3,12 @@ package cn.fnrice.gpsinfo.ui.components
 import android.hardware.Sensor
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cn.fnrice.gpsinfo.R
@@ -20,7 +17,8 @@ import cn.fnrice.gpsinfo.R
 fun MotionCard(
     sensorValues: Map<Int, FloatArray>,
     isExpanded: Boolean,
-    onExpandChange: (Boolean) -> Unit
+    onExpandChange: (Boolean) -> Unit,
+    onMotionClick: ((x: Float, y: Float, z: Float) -> Unit)? = null
 ) {
     // 缓存静态字符串
     val nameAccel = stringResource(R.string.sensor_name_accelerometer)
@@ -45,21 +43,15 @@ fun MotionCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            // 加速度计箭头可视化
             sensorValues[Sensor.TYPE_ACCELEROMETER]?.let { v ->
-                MotionArrowsView(
-                    axes = listOf(
-                        MotionAxisData(axisX, v[0], Color(0xFFEF4444), unitMps2),
-                        MotionAxisData(axisY, v[1], Color(0xFF22C55E), unitMps2),
-                        MotionAxisData(axisZ, v[2], Color(0xFF3B82F6), unitMps2)
-                    )
+                SensorMultiData(
+                    name = nameAccel,
+                    unit = unitMps2,
+                    axes = xyz.zip(v.take(3)),
+                    onClick = onMotionClick?.let { cb -> { cb(v[0], v[1], v[2]) } }
                 )
-            }
-
-            sensorValues[Sensor.TYPE_ACCELEROMETER]?.let { v ->
-                SensorMultiData(name = nameAccel, unit = unitMps2, axes = xyz.zip(v.take(3)))
             }
             sensorValues[Sensor.TYPE_GRAVITY]?.let { v ->
                 SensorMultiData(name = nameGravity, unit = unitMps2, axes = xyz.zip(v.take(3)))
