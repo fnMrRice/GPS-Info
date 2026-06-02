@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,6 +23,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CompassCalibration
 import androidx.compose.material.icons.filled.Eco
@@ -91,7 +93,7 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
             headerExtra = {
                 IconButton(onClick = { showHelpDialog = true }, modifier = Modifier.size(24.dp)) {
                     Icon(
-                        imageVector = Icons.Default.HelpOutline,
+                        imageVector = Icons.AutoMirrored.Filled.HelpOutline,
                         contentDescription = stringResource(R.string.sensor_help_icon_desc),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         modifier = Modifier.size(18.dp)
@@ -166,7 +168,7 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
             headerExtra = {
                 IconButton(onClick = { showOrientationHelp = true }, modifier = Modifier.size(24.dp)) {
                     Icon(
-                        imageVector = Icons.Default.HelpOutline,
+                        imageVector = Icons.AutoMirrored.Filled.HelpOutline,
                         contentDescription = stringResource(R.string.sensor_help_icon_desc),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         modifier = Modifier.size(18.dp)
@@ -180,7 +182,12 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                     .padding(vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                SensorItem(stringResource(R.string.sensor_azimuth, state.azimuth))
+                SensorSingleData(
+                    name = stringResource(R.string.sensor_name_azimuth),
+                    unit = stringResource(R.string.unit_deg),
+                    value = state.azimuth,
+                    format = "%.1f"
+                )
                 val rvValues = sensorValues[Sensor.TYPE_ROTATION_VECTOR]
                     ?: sensorValues[Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR]
                 rvValues?.let { values ->
@@ -188,12 +195,15 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                     SensorManager.getRotationMatrixFromVector(rotMatrix, values)
                     val orient = FloatArray(3)
                     SensorManager.getOrientation(rotMatrix, orient)
-                    SensorItem(stringResource(
-                        R.string.sensor_orientation,
-                        Math.toDegrees(orient[0].toDouble()).toFloat(),
-                        Math.toDegrees(orient[1].toDouble()).toFloat(),
-                        Math.toDegrees(orient[2].toDouble()).toFloat()
-                    ))
+                    SensorMultiData(
+                        name = stringResource(R.string.sensor_name_orientation),
+                        unit = stringResource(R.string.unit_deg),
+                        axes = listOf(
+                            stringResource(R.string.axis_azim) to Math.toDegrees(orient[0].toDouble()).toFloat(),
+                            stringResource(R.string.axis_pitch) to Math.toDegrees(orient[1].toDouble()).toFloat(),
+                            stringResource(R.string.axis_roll) to Math.toDegrees(orient[2].toDouble()).toFloat()
+                        )
+                    )
                 }
             }
         }
@@ -212,17 +222,38 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                     .padding(vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                val xyz = listOf(
+                    stringResource(R.string.axis_x),
+                    stringResource(R.string.axis_y),
+                    stringResource(R.string.axis_z)
+                )
                 sensorValues[Sensor.TYPE_ACCELEROMETER]?.let { values ->
-                    SensorItem(stringResource(R.string.sensor_accelerometer, values[0], values[1], values[2]))
+                    SensorMultiData(
+                        name = stringResource(R.string.sensor_name_accelerometer),
+                        unit = stringResource(R.string.unit_mps2),
+                        axes = xyz.zip(values.take(3).toList())
+                    )
                 }
                 sensorValues[Sensor.TYPE_GRAVITY]?.let { values ->
-                    SensorItem(stringResource(R.string.sensor_gravity, values[0], values[1], values[2]))
+                    SensorMultiData(
+                        name = stringResource(R.string.sensor_name_gravity),
+                        unit = stringResource(R.string.unit_mps2),
+                        axes = xyz.zip(values.take(3).toList())
+                    )
                 }
                 sensorValues[Sensor.TYPE_LINEAR_ACCELERATION]?.let { values ->
-                    SensorItem(stringResource(R.string.sensor_linear_acceleration, values[0], values[1], values[2]))
+                    SensorMultiData(
+                        name = stringResource(R.string.sensor_name_linear_acceleration),
+                        unit = stringResource(R.string.unit_mps2),
+                        axes = xyz.zip(values.take(3).toList())
+                    )
                 }
                 sensorValues[Sensor.TYPE_GYROSCOPE]?.let { values ->
-                    SensorItem(stringResource(R.string.sensor_gyroscope, values[0], values[1], values[2]))
+                    SensorMultiData(
+                        name = stringResource(R.string.sensor_name_gyroscope),
+                        unit = stringResource(R.string.unit_rad_s),
+                        axes = xyz.zip(values.take(3).toList())
+                    )
                 }
             }
         }
@@ -241,17 +272,40 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                     .padding(vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                val xyz = listOf(
+                    stringResource(R.string.axis_x),
+                    stringResource(R.string.axis_y),
+                    stringResource(R.string.axis_z)
+                )
                 sensorValues[Sensor.TYPE_MAGNETIC_FIELD]?.let { values ->
-                    SensorItem(stringResource(R.string.sensor_magnetic_field, values[0], values[1], values[2]))
+                    SensorMultiData(
+                        name = stringResource(R.string.sensor_name_magnetic_field),
+                        unit = stringResource(R.string.unit_ut),
+                        axes = xyz.zip(values.take(3).toList())
+                    )
                 }
                 sensorValues[Sensor.TYPE_LIGHT]?.let { values ->
-                    SensorItem(stringResource(R.string.sensor_light, values[0]))
+                    SensorSingleData(
+                        name = stringResource(R.string.sensor_name_light),
+                        unit = stringResource(R.string.unit_lx),
+                        value = values[0],
+                        format = "%.1f"
+                    )
                 }
                 sensorValues[Sensor.TYPE_PROXIMITY]?.let { values ->
-                    SensorItem(stringResource(R.string.sensor_proximity, values[0]))
+                    SensorSingleData(
+                        name = stringResource(R.string.sensor_name_proximity),
+                        unit = stringResource(R.string.unit_cm),
+                        value = values[0],
+                        format = "%.1f"
+                    )
                 }
                 sensorValues[Sensor.TYPE_PRESSURE]?.let { values ->
-                    SensorItem(stringResource(R.string.sensor_pressure, values[0]))
+                    SensorSingleData(
+                        name = stringResource(R.string.sensor_name_pressure),
+                        unit = stringResource(R.string.unit_hpa),
+                        value = values[0]
+                    )
                 }
             }
         }
@@ -352,10 +406,103 @@ private fun SupportedChip(label: String, supported: Boolean, onClick: () -> Unit
 }
 
 @Composable
-private fun SensorItem(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier.fillMaxWidth()
-    )
+private fun SensorMultiData(
+    name: String,
+    unit: String,
+    axes: List<Pair<String, Float>>,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                RoundedCornerShape(8.dp)
+            )
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = name,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = unit,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            axes.forEach { (label, value) ->
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "%.2f".format(value),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SensorSingleData(
+    name: String,
+    unit: String,
+    value: Float,
+    modifier: Modifier = Modifier,
+    format: String = "%.2f"
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                RoundedCornerShape(8.dp)
+            )
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = name,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.Bottom
+        ) {
+            Text(
+                text = format.format(value),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = unit,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
 }

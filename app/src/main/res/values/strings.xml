@@ -135,6 +135,29 @@
     <string name="sensor_gravity">Gravity: X=%1$.2f, Y=%2$.2f, Z=%3$.2f m/s²</string>
     <string name="sensor_linear_acceleration">Linear Accel: X=%1$.2f, Y=%2$.2f, Z=%3$.2f m/s²</string>
     <string name="sensor_orientation">Orientation: Azim=%1$.1f°, Pitch=%2$.1f°, Roll=%3$.1f°</string>
+    <string name="sensor_name_accelerometer">Accelerometer</string>
+    <string name="sensor_name_gyroscope">Gyroscope</string>
+    <string name="sensor_name_magnetic_field">Magnetic Field</string>
+    <string name="sensor_name_gravity">Gravity</string>
+    <string name="sensor_name_linear_acceleration">Linear Accel</string>
+    <string name="sensor_name_orientation">Orientation</string>
+    <string name="sensor_name_pressure">Pressure</string>
+    <string name="sensor_name_light">Light</string>
+    <string name="sensor_name_proximity">Proximity</string>
+    <string name="sensor_name_azimuth">Azimuth</string>
+    <string name="unit_mps2">m/s²</string>
+    <string name="unit_rad_s">rad/s</string>
+    <string name="unit_ut">μT</string>
+    <string name="unit_hpa">hPa</string>
+    <string name="unit_lx">lx</string>
+    <string name="unit_cm">cm</string>
+    <string name="unit_deg">°</string>
+    <string name="axis_x">X</string>
+    <string name="axis_y">Y</string>
+    <string name="axis_z">Z</string>
+    <string name="axis_azim">Azim</string>
+    <string name="axis_pitch">Pitch</string>
+    <string name="axis_roll">Roll</string>
     <string name="sensor_help_icon_desc">Help</string>
     <string name="sensor_help_title">Sensor Availability</string>
     <string name="sensor_help_available">Available:</string>
