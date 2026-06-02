@@ -102,6 +102,8 @@
     <string name="toast_gps_disabled">GPS 已禁用，请开启后再试。</string>
     <string name="toast_permission_denied">需要定位权限，但尚未授予。</string>
     <string name="satellite_search_timeout_hint">搜星中？请尝试移至窗边或开阔区域。</string>
+    <string name="mock_mode_label">模拟数据模式</string>
+    <string name="mock_mode_desc">正在使用模拟卫星数据进行测试，关闭后将使用真实GPS。</string>
     
     <string name="provider_gps">GPS</string>
     <string name="provider_network">网络</string>

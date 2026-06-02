@@ -102,6 +102,8 @@
     <string name="toast_gps_disabled">GPS is disabled. Please enable it to use this app.</string>
     <string name="toast_permission_denied">Location permission is required but not granted.</string>
     <string name="satellite_search_timeout_hint">Still searching? Try moving near a window or to an open area.</string>
+    <string name="mock_mode_label">Mock Data Mode</string>
+    <string name="mock_mode_desc">Using simulated satellite data for testing. Toggle off to use real GPS.</string>
     
     <string name="provider_gps">GPS</string>
     <string name="provider_network">Network</string>

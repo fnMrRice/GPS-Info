@@ -64,6 +64,11 @@ class GnssViewModel : ViewModel() {
     private val _isDeveloperMode = MutableStateFlow(false)
     val isDeveloperMode: StateFlow<Boolean> = _isDeveloperMode.asStateFlow()
 
+    private val _isMockMode = MutableStateFlow(false)
+    val isMockMode: StateFlow<Boolean> = _isMockMode.asStateFlow()
+
+    private var mockJob: Job? = null
+
     private val _logs = MutableStateFlow<List<String>>(emptyList())
     val logs: StateFlow<List<String>> = _logs.asStateFlow()
 
@@ -115,6 +120,9 @@ class GnssViewModel : ViewModel() {
             }
             viewModelScope.launch {
                 repo.isDeveloperModeFlow.collect { _isDeveloperMode.value = it }
+            }
+            viewModelScope.launch {
+                repo.isMockModeFlow.collect { _isMockMode.value = it }
             }
         }
     }
@@ -189,6 +197,40 @@ class GnssViewModel : ViewModel() {
         }
     }
 
+    fun setMockMode(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository?.setMockMode(enabled)
+            if (enabled) {
+                startMockGnss()
+            } else {
+                stopMockGnss()
+            }
+        }
+    }
+
+    private fun startMockGnss() {
+        stopMockGnss()
+        addLog("Mock mode enabled: generating simulated satellite data")
+        _state.value = _state.value.copy(isLocationEnabled = true)
+        mockJob = viewModelScope.launch {
+            while (isActive) {
+                val satellites = MockDataProvider.generateSatellites()
+                _state.value = _state.value.copy(
+                    satellites = satellites,
+                    satellitesTotal = satellites.size,
+                    satellitesUsedInFix = satellites.count { it.usedInFix },
+                    location = MockDataProvider.generateLocation(),
+                )
+                delay(1000L)
+            }
+        }
+    }
+
+    private fun stopMockGnss() {
+        mockJob?.cancel()
+        mockJob = null
+    }
+
     suspend fun testApiKey(provider: MapProvider): Boolean {
         val host = when (provider) {
             MapProvider.GOOGLE -> "maps.googleapis.com"
@@ -227,6 +269,13 @@ class GnssViewModel : ViewModel() {
             return
         }
         addLog("startGnss called")
+
+        // Mock模式下跳过真实GNSS注册
+        if (_isMockMode.value) {
+            addLog("Mock mode active, skipping real GNSS registration")
+            startMockGnss()
+            return
+        }
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         locationManager = lm
 
@@ -425,6 +474,7 @@ class GnssViewModel : ViewModel() {
 
     fun stopGnss() {
         addLog("stopGnss called")
+        stopMockGnss()
         if (gnssCallback == null) {
             addLog("GNSS already stopped, ignoring")
             return

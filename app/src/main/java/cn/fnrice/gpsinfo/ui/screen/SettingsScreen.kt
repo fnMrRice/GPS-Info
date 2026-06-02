@@ -32,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -43,6 +44,8 @@ import cn.fnrice.gpsinfo.ui.components.MapSettingsCard
 import cn.fnrice.gpsinfo.ui.components.SettingsSectionCard
 import cn.fnrice.gpsinfo.ui.components.ApiKeysCard
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Switch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,6 +58,7 @@ fun SettingsDialog(viewModel: GnssViewModel, onDismiss: () -> Unit) {
     val useCustomAmapKey by viewModel.useCustomAmapKey.collectAsState()
     val useCustomBaiduKey by viewModel.useCustomBaiduKey.collectAsState()
     val isDeveloperMode by viewModel.isDeveloperMode.collectAsState()
+    val isMockMode by viewModel.isMockMode.collectAsState()
     var showLogDialog by remember { mutableStateOf(false) }
 
     Dialog(
@@ -118,6 +122,28 @@ fun SettingsDialog(viewModel: GnssViewModel, onDismiss: () -> Unit) {
                                     modifier = Modifier.padding(vertical = 4.dp),
                                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                                 )
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        stringResource(R.string.mock_mode_label),
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    Switch(
+                                        checked = isMockMode,
+                                        onCheckedChange = { viewModel.setMockMode(it) }
+                                    )
+                                }
+                                if (isMockMode) {
+                                    Text(
+                                        stringResource(R.string.mock_mode_desc),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
 
                                 Button(
                                     onClick = { showLogDialog = true },

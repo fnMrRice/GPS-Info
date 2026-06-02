@@ -27,6 +27,7 @@ class SettingsRepository(private val context: Context) {
     private val USE_CUSTOM_AMAP_KEY = booleanPreferencesKey("use_custom_amap_key")
     private val USE_CUSTOM_BAIDU_KEY = booleanPreferencesKey("use_custom_baidu_key")
     private val IS_DEVELOPER_MODE = booleanPreferencesKey("is_developer_mode")
+    private val IS_MOCK_MODE = booleanPreferencesKey("is_mock_mode")
 
     val mapProviderFlow: Flow<MapProvider> = context.dataStore.data
         .map { preferences ->
@@ -58,6 +59,9 @@ class SettingsRepository(private val context: Context) {
 
     val isDeveloperModeFlow: Flow<Boolean> = context.dataStore.data
         .map { preferences -> preferences[IS_DEVELOPER_MODE] ?: BuildConfig.DEBUG }
+
+    val isMockModeFlow: Flow<Boolean> = context.dataStore.data
+        .map { preferences -> preferences[IS_MOCK_MODE] ?: false }
 
     suspend fun setMapProvider(provider: MapProvider) {
         context.dataStore.edit { preferences ->
@@ -104,6 +108,12 @@ class SettingsRepository(private val context: Context) {
     suspend fun setDeveloperMode(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[IS_DEVELOPER_MODE] = enabled
+        }
+    }
+
+    suspend fun setMockMode(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[IS_MOCK_MODE] = enabled
         }
     }
 }
