@@ -63,7 +63,6 @@ fun AMapViewContainer(
                 Lifecycle.Event.ON_CREATE -> mapView.onCreate(Bundle())
                 Lifecycle.Event.ON_RESUME -> mapView.onResume()
                 Lifecycle.Event.ON_PAUSE -> mapView.onPause()
-                Lifecycle.Event.ON_DESTROY -> mapView.onDestroy()
                 else -> {}
             }
         }
@@ -78,73 +77,73 @@ fun AMapViewContainer(
         factory = { mapView },
         modifier = modifier,
         update = { view ->
-            val amap = view.map
-            amap.mapType = if (isDarkTheme) AMap.MAP_TYPE_NIGHT else AMap.MAP_TYPE_NORMAL
+            try {
+                val amap = view.map ?: return@AndroidView
+                amap.mapType = if (isDarkTheme) AMap.MAP_TYPE_NIGHT else AMap.MAP_TYPE_NORMAL
 
-            // 禁用手势和 UI 控件
-            amap.uiSettings.apply {
-                isZoomControlsEnabled = false
-                isMyLocationButtonEnabled = false
-                setAllGesturesEnabled(false) // 使用正确的 setter 方法
-            }
-
-            if (latitude != null && longitude != null) {
-                val latLng = LatLng(latitude, longitude)
-                amap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 4f))
-
-                // 获取当前需要的卫星 ID 集合
-                val currentSatIds = satellites.map { "${it.constellationType}-${it.svid}" }.toSet()
-
-                // 移除不再需要的 Marker
-                val iterator = markerCache.entries.iterator()
-                while (iterator.hasNext()) {
-                    val entry = iterator.next()
-                    if (entry.key !in currentSatIds) {
-                        entry.value.remove()
-                        iterator.remove()
-                    }
+                amap.uiSettings.apply {
+                    isZoomControlsEnabled = false
+                    isMyLocationButtonEnabled = false
+                    setAllGesturesEnabled(false)
                 }
 
-                satellites.forEach { sat ->
-                    val satId = "${sat.constellationType}-${sat.svid}"
-                    val azimRad =
-                        Math.toRadians((sat.azimuthDegrees + if (rotateWithCompass) -azimuth else 0f).toDouble())
-                    val distance = (1 - sat.elevationDegrees / 90f) * 10.0
-                    val dLat = distance * cos(azimRad)
-                    val dLng = distance * sin(azimRad)
-                    val satLatLng = LatLng(latitude + dLat, longitude + dLng)
+                if (latitude != null && longitude != null) {
+                    val latLng = LatLng(latitude, longitude)
+                    amap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 4f))
 
-                    val satColor = getConstellationColor(sat.getConstellationName(context)).toArgb()
-                    val bitmapKey = "${sat.svid}-${satColor}-${sat.usedInFix}"
-                    val bitmapDescriptor = bitmapCache.getOrPut(bitmapKey) {
-                        AMapBitmapDescriptorFactory.fromBitmap(
-                            createSatelliteBitmap(
-                                sat.svid.toString(),
-                                satColor,
-                                sat.usedInFix
+                    val currentSatIds = satellites.map { "${it.constellationType}-${it.svid}" }.toSet()
+
+                    val iterator = markerCache.entries.iterator()
+                    while (iterator.hasNext()) {
+                        val entry = iterator.next()
+                        if (entry.key !in currentSatIds) {
+                            entry.value.remove()
+                            iterator.remove()
+                        }
+                    }
+
+                    satellites.forEach { sat ->
+                        val satId = "${sat.constellationType}-${sat.svid}"
+                        val azimRad =
+                            Math.toRadians((sat.azimuthDegrees + if (rotateWithCompass) -azimuth else 0f).toDouble())
+                        val distance = (1 - sat.elevationDegrees / 90f) * 10.0
+                        val dLat = distance * cos(azimRad)
+                        val dLng = distance * sin(azimRad)
+                        val satLatLng = LatLng(latitude + dLat, longitude + dLng)
+
+                        val satColor = getConstellationColor(sat.getConstellationName(context)).toArgb()
+                        val bitmapKey = "${sat.svid}-${satColor}-${sat.usedInFix}"
+                        val bitmapDescriptor = bitmapCache.getOrPut(bitmapKey) {
+                            AMapBitmapDescriptorFactory.fromBitmap(
+                                createSatelliteBitmap(
+                                    sat.svid.toString(),
+                                    satColor,
+                                    sat.usedInFix
+                                )
                             )
-                        )
-                    }
+                        }
 
-                    val existingMarker = markerCache[satId]
-                    if (existingMarker != null) {
-                        existingMarker.position = satLatLng
-                        existingMarker.setIcon(bitmapDescriptor)
-                    } else {
-                        val markerOptions = MarkerOptions()
-                            .position(satLatLng)
-                            .anchor(0.5f, 0.5f)
-                            .title(sat.svid.toString())
-                            .icon(bitmapDescriptor)
+                        val existingMarker = markerCache[satId]
+                        if (existingMarker != null) {
+                            existingMarker.position = satLatLng
+                            existingMarker.setIcon(bitmapDescriptor)
+                        } else {
+                            val markerOptions = MarkerOptions()
+                                .position(satLatLng)
+                                .anchor(0.5f, 0.5f)
+                                .title(sat.svid.toString())
+                                .icon(bitmapDescriptor)
 
-                        val newMarker = amap.addMarker(markerOptions)
-                        markerCache[satId] = newMarker
+                            val newMarker = amap.addMarker(markerOptions)
+                            markerCache[satId] = newMarker
+                        }
                     }
+                } else {
+                    markerCache.values.forEach { it.remove() }
+                    markerCache.clear()
                 }
-            } else {
-                // 清理所有 Marker
-                markerCache.values.forEach { it.remove() }
-                markerCache.clear()
+            } catch (e: Exception) {
+                // AMap native layer may throw after onDestroy
             }
         }
     )
@@ -198,6 +197,7 @@ fun GoogleMapViewContainer(
     ) {
         if (latitude != null && longitude != null) {
             satellites.forEach { sat ->
+                val satId = "${sat.constellationType}-${sat.svid}"
                 val azimRad =
                     Math.toRadians((sat.azimuthDegrees + if (rotateWithCompass) -azimuth else 0f).toDouble())
                 val distance = (1 - sat.elevationDegrees / 90f) * 10.0
@@ -219,6 +219,7 @@ fun GoogleMapViewContainer(
                 }
 
                 Marker(
+                    key = satId,
                     state = rememberUpdatedMarkerState(position = satLatLng),
                     anchor = androidx.compose.ui.geometry.Offset(0.5f, 0.5f),
                     title = sat.svid.toString(),
