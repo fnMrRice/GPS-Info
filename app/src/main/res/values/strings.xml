@@ -137,5 +137,8 @@
     <string name="sensor_orientation">Orientation: Azim=%1$.1f°, Pitch=%2$.1f°, Roll=%3$.1f°</string>
     <string name="sensor_help_icon_desc">Help</string>
     <string name="sensor_help_title">Sensor Availability</string>
-    <string name="sensor_help_message">Green background: sensor is available on this device.\nGray background: sensor is not available.\nTap any sensor chip to view its current value.</string>
+    <string name="sensor_help_available">Available:</string>
+    <string name="sensor_help_unavailable">Unavailable:</string>
+    <string name="sensor_help_this_bg">this background</string>
+    <string name="sensor_help_tap_hint">Tap any sensor chip to view its current value.</string>
 </resources>
