@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cn.fnrice.gpsinfo.R
+import cn.fnrice.gpsinfo.data.SatelliteGroup
 import cn.fnrice.gpsinfo.data.SatelliteInfo
 import cn.fnrice.gpsinfo.ui.components.LocationCard
 import cn.fnrice.gpsinfo.ui.components.SatelliteCard
@@ -103,7 +104,7 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     val constellations = remember(state.satellites, context) {
         val country = java.util.Locale.getDefault().country
         val isChinaRegion = country == "CN" || country == "HK" || country == "MO"
-        
+
         state.satellites
             .map { it.constellationType }
             .distinct()
@@ -118,6 +119,30 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
             .map { type ->
                 SatelliteInfo.getConstellationNameStatic(context, type)
             }
+    }
+
+    // 按 (constellationType, svid) 分组，同一颗卫星多频段信号合并显示
+    val satelliteGroups = remember(filteredSatellites, filterStatus, context) {
+        val groups = filteredSatellites
+            .groupBy { "${it.constellationType}-${it.svid}" }
+            .map { (_, entries) -> SatelliteGroup(entries[0].svid, entries[0].constellationType, entries) }
+
+        groups.filter { group ->
+            when (filterStatus) {
+                SatelliteFilterStatus.ALL -> true
+                SatelliteFilterStatus.IN_USE -> group.usedInFix
+                SatelliteFilterStatus.NOT_USED -> !group.usedInFix
+            }
+        }.sortedWith(compareBy<SatelliteGroup> {
+            val country = java.util.Locale.getDefault().country
+            val isChinaRegion = country == "CN" || country == "HK" || country == "MO"
+            when (it.constellationType) {
+                android.location.GnssStatus.CONSTELLATION_BEIDOU -> if (isChinaRegion) 0 else 2
+                android.location.GnssStatus.CONSTELLATION_GPS -> 1
+                android.location.GnssStatus.CONSTELLATION_GALILEO -> if (isChinaRegion) 2 else 0
+                else -> 3
+            }
+        }.thenBy { it.svid })
     }
 
     LazyColumn(
@@ -176,7 +201,7 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
             )
         }
 
-        if (filteredSatellites.isEmpty()) {
+        if (satelliteGroups.isEmpty()) {
             item {
                 Box(
                     modifier = Modifier
@@ -208,8 +233,8 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                 }
             }
         } else {
-            items(filteredSatellites, key = { "${it.constellationType}-${it.svid}-${it.carrierFrequencyHz}-${it.basebandCn0DbHz}" }) { sat ->
-                SatelliteCard(sat)
+            items(satelliteGroups, key = { "${it.constellationType}-${it.svid}" }) { group ->
+                SatelliteCard(group)
             }
         }
     }

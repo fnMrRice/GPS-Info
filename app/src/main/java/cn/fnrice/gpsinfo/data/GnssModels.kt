@@ -38,6 +38,45 @@ data class SatelliteInfo(
     }
 }
 
+/**
+ * 同一颗卫星（相同 constellationType + svid）可能有多个不同频段的信号，
+ * 将它们合并为一个组来显示。
+ */
+data class SatelliteGroup(
+    val svid: Int,
+    val constellationType: Int,
+    val entries: List<SatelliteInfo>,
+) {
+    /** 取信号最强的那条作为主条目 */
+    val primary: SatelliteInfo = entries.maxBy { it.cn0DbHz }
+
+    /** 所有频段标签，如 ["L1", "L5"] */
+    val bands: List<String> = entries.mapNotNull { sat ->
+        if (!sat.hasCarrierFrequency) return@mapNotNull null
+        when {
+            sat.carrierFrequencyHz > 1.575e9 -> "L1"
+            sat.carrierFrequencyHz > 1.176e9 -> "L5"
+            sat.carrierFrequencyHz > 1.1e9 -> "E5"
+            else -> "%.0fMHz".format(sat.carrierFrequencyHz / 1e6)
+        }
+    }.distinct()
+
+    val usedInFix: Boolean = entries.any { it.usedInFix }
+    val bestCn0: Float = primary.cn0DbHz
+    val bestBasebandCn0: Float = entries.filter { it.hasBasebandCn0DbHz }.maxOfOrNull { it.basebandCn0DbHz } ?: 0f
+    val hasBasebandCn0: Boolean = entries.any { it.hasBasebandCn0DbHz }
+    val hasCarrierFrequency: Boolean = entries.any { it.hasCarrierFrequency }
+    val bestCarrierFrequencyHz: Float = primary.carrierFrequencyHz
+    val elevationDegrees: Float = primary.elevationDegrees
+    val azimuthDegrees: Float = primary.azimuthDegrees
+    val hasAlmanacData: Boolean = entries.any { it.hasAlmanacData }
+    val hasEphemerisData: Boolean = entries.any { it.hasEphemerisData }
+
+    fun getConstellationName(context: android.content.Context): String {
+        return SatelliteInfo.getConstellationNameStatic(context, constellationType)
+    }
+}
+
 data class LocationInfo(
     val latitude: Double,
     val longitude: Double,

@@ -21,12 +21,13 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cn.fnrice.gpsinfo.R
-import cn.fnrice.gpsinfo.data.SatelliteInfo
+import cn.fnrice.gpsinfo.data.SatelliteGroup
 
 @Composable
-fun SatelliteCard(sat: SatelliteInfo) {
+fun SatelliteCard(group: SatelliteGroup) {
     val context = LocalContext.current
-    val constellationName = remember(sat.constellationType, context) { sat.getConstellationName(context) }
+    val sat = group.primary
+    val constellationName = remember(group.constellationType, context) { group.getConstellationName(context) }
     var expanded by remember { mutableStateOf(false) }
 
     OutlinedCard(
@@ -70,20 +71,15 @@ fun SatelliteCard(sat: SatelliteInfo) {
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    
+
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(
-                                "$constellationName ${sat.svid}",
+                                "$constellationName ${group.svid}",
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                             )
-                            if (sat.hasCarrierFrequency) {
-                                val band = when {
-                                    sat.carrierFrequencyHz > 1.5e9 -> "L1"
-                                    sat.carrierFrequencyHz > 1.1e9 -> "L5"
-                                    else -> "L"
-                                }
+                            group.bands.forEach { band ->
                                 Surface(
                                     color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
                                     shape = RoundedCornerShape(2.dp)
@@ -99,7 +95,7 @@ fun SatelliteCard(sat: SatelliteInfo) {
                             }
                         }
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            if (sat.usedInFix) {
+                            if (group.usedInFix) {
                                 Text(
                                     stringResource(R.string.sat_used_in_fix),
                                     color = MaterialTheme.colorScheme.primary,
@@ -114,7 +110,7 @@ fun SatelliteCard(sat: SatelliteInfo) {
                                 )
                             }
                             Text(
-                                "${stringResource(R.string.label_elev)}: %.0f°".format(sat.elevationDegrees),
+                                "${stringResource(R.string.label_elev)}: %.0f°".format(group.elevationDegrees),
                                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -123,7 +119,7 @@ fun SatelliteCard(sat: SatelliteInfo) {
                 }
 
                 Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(start = 4.dp)) {
-                    val signal = if (sat.cn0DbHz > 0) sat.cn0DbHz else if (sat.hasBasebandCn0DbHz) sat.basebandCn0DbHz else 0f
+                    val signal = if (group.bestCn0 > 0) group.bestCn0 else if (group.hasBasebandCn0) group.bestBasebandCn0 else 0f
                     val signalColor = when {
                         signal > 35 -> Color(0xFF4CAF50)
                         signal > 25 -> Color(0xFF8BC34A)
@@ -131,7 +127,7 @@ fun SatelliteCard(sat: SatelliteInfo) {
                         signal > 0 -> Color(0xFFF44336)
                         else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
                     }
-                    
+
                     Text(
                         if (signal > 0) "%.1f".format(signal) else "---",
                         style = MaterialTheme.typography.labelLarge,
@@ -141,7 +137,6 @@ fun SatelliteCard(sat: SatelliteInfo) {
 
                     Spacer(modifier = Modifier.height(1.dp))
 
-                    // 简易信号强度条
                     Box(
                         modifier = Modifier
                             .width(40.dp)
@@ -157,7 +152,7 @@ fun SatelliteCard(sat: SatelliteInfo) {
                         )
                     }
                 }
-                
+
                 Icon(
                     imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                     contentDescription = null,
@@ -177,33 +172,51 @@ fun SatelliteCard(sat: SatelliteInfo) {
                     Spacer(modifier = Modifier.height(12.dp))
                     HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
                     Spacer(modifier = Modifier.height(12.dp))
-                    
+
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            SatelliteDataField(label = stringResource(R.string.label_elev), value = "%.1f°".format(sat.elevationDegrees), modifier = Modifier.weight(1f))
-                            SatelliteDataField(label = stringResource(R.string.label_azim), value = "%.1f°".format(sat.azimuthDegrees), modifier = Modifier.weight(1f))
-                        }
-                        
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            SatelliteDataField(label = stringResource(R.string.label_cn0), value = if (sat.cn0DbHz > 0) "%.1f dB-Hz".format(sat.cn0DbHz) else "---", modifier = Modifier.weight(1f))
-                            SatelliteDataField(label = stringResource(R.string.label_baseband_cn0), value = if (sat.hasBasebandCn0DbHz) "%.1f dB-Hz".format(sat.basebandCn0DbHz) else "---", modifier = Modifier.weight(1f))
+                            SatelliteDataField(label = stringResource(R.string.label_elev), value = "%.1f°".format(group.elevationDegrees), modifier = Modifier.weight(1f))
+                            SatelliteDataField(label = stringResource(R.string.label_azim), value = "%.1f°".format(group.azimuthDegrees), modifier = Modifier.weight(1f))
                         }
 
-                        if (sat.hasCarrierFrequency) {
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            SatelliteDataField(label = stringResource(R.string.label_cn0), value = if (group.bestCn0 > 0) "%.1f dB-Hz".format(group.bestCn0) else "---", modifier = Modifier.weight(1f))
+                            SatelliteDataField(label = stringResource(R.string.label_baseband_cn0), value = if (group.hasBasebandCn0) "%.1f dB-Hz".format(group.bestBasebandCn0) else "---", modifier = Modifier.weight(1f))
+                        }
+
+                        // 多频段时显示每个频段的详细信息
+                        if (group.entries.size > 1) {
+                            group.entries.forEach { entry ->
+                                val band = if (entry.hasCarrierFrequency) {
+                                    when {
+                                        entry.carrierFrequencyHz > 1.575e9 -> "L1"
+                                        entry.carrierFrequencyHz > 1.176e9 -> "L5"
+                                        entry.carrierFrequencyHz > 1.1e9 -> "E5"
+                                        else -> "%.0fMHz".format(entry.carrierFrequencyHz / 1e6)
+                                    }
+                                } else "---"
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    SatelliteDataField(label = band, value = "%.1f dB-Hz".format(entry.cn0DbHz), modifier = Modifier.weight(1f))
+                                    if (entry.hasCarrierFrequency) {
+                                        SatelliteDataField(label = stringResource(R.string.label_freq), value = "%.3f MHz".format(entry.carrierFrequencyHz / 1e6), modifier = Modifier.weight(1f))
+                                    }
+                                }
+                            }
+                        } else if (sat.hasCarrierFrequency) {
                             SatelliteDataField(label = stringResource(R.string.label_freq), value = "%.3f MHz".format(sat.carrierFrequencyHz / 1e6))
                         }
 
                         Row(modifier = Modifier.fillMaxWidth()) {
                             SatelliteDataField(
                                 label = stringResource(R.string.label_almanac),
-                                value = stringResource(if (sat.hasAlmanacData) R.string.yes else R.string.no),
-                                valueColor = if (sat.hasAlmanacData) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                value = stringResource(if (group.hasAlmanacData) R.string.yes else R.string.no),
+                                valueColor = if (group.hasAlmanacData) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.weight(1f)
                             )
                             SatelliteDataField(
                                 label = stringResource(R.string.label_ephemeris),
-                                value = stringResource(if (sat.hasEphemerisData) R.string.yes else R.string.no),
-                                valueColor = if (sat.hasEphemerisData) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                value = stringResource(if (group.hasEphemerisData) R.string.yes else R.string.no),
+                                valueColor = if (group.hasEphemerisData) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.weight(1f)
                             )
                         }
