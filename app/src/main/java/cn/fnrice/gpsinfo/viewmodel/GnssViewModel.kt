@@ -72,11 +72,16 @@ class GnssViewModel : ViewModel() {
     private val _logs = MutableStateFlow<List<String>>(emptyList())
     val logs: StateFlow<List<String>> = _logs.asStateFlow()
 
+    private val logBuffer = ArrayDeque<String>(500)
+    private val dateFormat = java.text.SimpleDateFormat("HH:mm:ss.SSS", java.util.Locale.getDefault())
+
     private fun addLog(msg: String) {
-        val timestamp = java.text.SimpleDateFormat("HH:mm:ss.SSS", java.util.Locale.getDefault()).format(java.util.Date())
+        val timestamp = dateFormat.format(java.util.Date())
         val logEntry = "[$timestamp] $msg"
         Log.d("GnssViewModel", logEntry)
-        _logs.value = (listOf(logEntry) + _logs.value).take(500) // Keep last 500 logs, newest first
+        logBuffer.addFirst(logEntry)
+        while (logBuffer.size > 500) logBuffer.removeLast()
+        _logs.value = logBuffer.toList()
     }
 
     private var settingsRepository: SettingsRepository? = null
@@ -259,6 +264,7 @@ class GnssViewModel : ViewModel() {
 
     @SuppressLint("MissingPermission")
     fun clearLogs() {
+        logBuffer.clear()
         _logs.value = emptyList()
     }
 
