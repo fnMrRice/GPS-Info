@@ -23,6 +23,7 @@ import com.amap.api.maps.AMap
 import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.MapView
 import com.amap.api.maps.MapsInitializer
+import com.amap.api.maps.model.CameraPosition
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.MarkerOptions
 import com.google.maps.android.compose.GoogleMap
@@ -100,7 +101,9 @@ fun AMapViewContainer(
 
                 if (latitude != null && longitude != null) {
                     val latLng = LatLng(latitude, longitude)
-                    amap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 4f))
+                    val bearing = if (rotateWithCompass) -azimuth else 0f
+                    val cameraPosition = CameraPosition(latLng, 4f, 0f, bearing)
+                    amap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
 
                     val currentSatIds = satellites.map { "${it.constellationType}-${it.svid}" }.toSet()
 
@@ -115,8 +118,7 @@ fun AMapViewContainer(
 
                     satellites.forEach { sat ->
                         val satId = "${sat.constellationType}-${sat.svid}"
-                        val azimRad =
-                            Math.toRadians((sat.azimuthDegrees + if (rotateWithCompass) -azimuth else 0f).toDouble())
+                        val azimRad = Math.toRadians(sat.azimuthDegrees.toDouble())
                         val distance = (1 - sat.elevationDegrees / 90f) * 10.0
                         val dLat = distance * cos(azimRad)
                         val dLng = distance * sin(azimRad)
@@ -175,12 +177,15 @@ fun GoogleMapViewContainer(
         remember { mutableMapOf<String, com.google.android.gms.maps.model.BitmapDescriptor>() }
     val context = LocalContext.current
 
-    LaunchedEffect(latitude, longitude) {
+    LaunchedEffect(latitude, longitude, rotateWithCompass, azimuth) {
         if (latitude != null && longitude != null) {
+            val bearing = if (rotateWithCompass) -azimuth else 0f
             cameraPositionState.position =
-                com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
+                com.google.android.gms.maps.model.CameraPosition(
                     com.google.android.gms.maps.model.LatLng(latitude, longitude),
-                    4f
+                    4f,
+                    0f,
+                    bearing
                 )
         }
     }
@@ -209,8 +214,7 @@ fun GoogleMapViewContainer(
         if (latitude != null && longitude != null) {
             satellites.forEach { sat ->
                 val satId = "${sat.constellationType}-${sat.svid}"
-                val azimRad =
-                    Math.toRadians((sat.azimuthDegrees + if (rotateWithCompass) -azimuth else 0f).toDouble())
+                val azimRad = Math.toRadians(sat.azimuthDegrees.toDouble())
                 val distance = (1 - sat.elevationDegrees / 90f) * 10.0
                 val dLat = distance * cos(azimRad)
                 val dLng = distance * sin(azimRad)
