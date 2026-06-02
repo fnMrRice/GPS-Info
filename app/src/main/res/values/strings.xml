@@ -141,4 +141,6 @@
     <string name="sensor_help_unavailable">Unavailable:</string>
     <string name="sensor_help_this_bg">this background</string>
     <string name="sensor_help_tap_hint">Tap any sensor chip to view its current value.</string>
+    <string name="sensor_orientation_help_title">Orientation Data Source</string>
+    <string name="sensor_orientation_help_message">Azimuth and orientation angles are computed from the Rotation Vector sensor. If unavailable, the Geomagnetic Rotation Vector sensor is used as fallback. Both can be found in the Supported Sensors section above.</string>
 </resources>

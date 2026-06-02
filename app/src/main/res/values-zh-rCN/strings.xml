@@ -141,4 +141,6 @@
     <string name="sensor_help_unavailable">不可用：</string>
     <string name="sensor_help_this_bg">这个背景</string>
     <string name="sensor_help_tap_hint">点击任意传感器可查看当前值。</string>
+    <string name="sensor_orientation_help_title">方向数据来源</string>
+    <string name="sensor_orientation_help_message">方位角和姿态角由旋转矢量传感器计算得出。如果设备不支持，则回退使用地磁旋转矢量传感器。两者均可在上方"支持的传感器"中找到。</string>
 </resources>

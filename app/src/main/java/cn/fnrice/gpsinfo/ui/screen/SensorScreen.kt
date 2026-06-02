@@ -61,6 +61,7 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     var motionExpanded by remember { mutableStateOf(false) }
     var environmentExpanded by remember { mutableStateOf(false) }
     var showHelpDialog by remember { mutableStateOf(false) }
+    var showOrientationHelp by remember { mutableStateOf(false) }
 
     LaunchedEffect(orientationExpanded, motionExpanded, environmentExpanded) {
         viewModel.setSensorUiActive(orientationExpanded || motionExpanded || environmentExpanded)
@@ -161,7 +162,17 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
             isExpandable = true,
             isExpanded = orientationExpanded,
             onExpandChange = { orientationExpanded = it },
-            icon = Icons.Default.CompassCalibration
+            icon = Icons.Default.CompassCalibration,
+            headerExtra = {
+                IconButton(onClick = { showOrientationHelp = true }, modifier = Modifier.size(24.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.HelpOutline,
+                        contentDescription = stringResource(R.string.sensor_help_icon_desc),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
         ) {
             Column(
                 modifier = Modifier
@@ -295,6 +306,21 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                 Text(
                     text = stringResource(android.R.string.ok),
                     modifier = Modifier.clickable { showHelpDialog = false },
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        )
+    }
+
+    if (showOrientationHelp) {
+        AlertDialog(
+            onDismissRequest = { showOrientationHelp = false },
+            title = { Text(stringResource(R.string.sensor_orientation_help_title)) },
+            text = { Text(stringResource(R.string.sensor_orientation_help_message)) },
+            confirmButton = {
+                Text(
+                    text = stringResource(android.R.string.ok),
+                    modifier = Modifier.clickable { showOrientationHelp = false },
                     color = MaterialTheme.colorScheme.primary
                 )
             }
