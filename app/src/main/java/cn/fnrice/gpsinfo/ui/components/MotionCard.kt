@@ -18,7 +18,7 @@ fun MotionCard(
     sensorValues: Map<Int, FloatArray>,
     isExpanded: Boolean,
     onExpandChange: (Boolean) -> Unit,
-    onMotionClick: ((x: Float, y: Float, z: Float) -> Unit)? = null
+    onMotionClick: ((sensorType: Int) -> Unit)? = null
 ) {
     // 缓存静态字符串
     val nameAccel = stringResource(R.string.sensor_name_accelerometer)
@@ -50,17 +50,32 @@ fun MotionCard(
                     name = nameAccel,
                     unit = unitMps2,
                     axes = xyz.zip(v.take(3)),
-                    onClick = onMotionClick?.let { cb -> { cb(v[0], v[1], v[2]) } }
+                    onClick = onMotionClick?.let { cb -> { cb(Sensor.TYPE_ACCELEROMETER) } }
                 )
             }
             sensorValues[Sensor.TYPE_GRAVITY]?.let { v ->
-                SensorMultiData(name = nameGravity, unit = unitMps2, axes = xyz.zip(v.take(3)))
+                SensorMultiData(
+                    name = nameGravity,
+                    unit = unitMps2,
+                    axes = xyz.zip(v.take(3)),
+                    onClick = onMotionClick?.let { cb -> { cb(Sensor.TYPE_GRAVITY) } }
+                )
             }
             sensorValues[Sensor.TYPE_LINEAR_ACCELERATION]?.let { v ->
-                SensorMultiData(name = nameLinear, unit = unitMps2, axes = xyz.zip(v.take(3)))
+                SensorMultiData(
+                    name = nameLinear,
+                    unit = unitMps2,
+                    axes = xyz.zip(v.take(3)),
+                    onClick = onMotionClick?.let { cb -> { cb(Sensor.TYPE_LINEAR_ACCELERATION) } }
+                )
             }
             sensorValues[Sensor.TYPE_GYROSCOPE]?.let { v ->
-                SensorMultiData(name = nameGyro, unit = unitRadS, axes = xyz.zip(v.take(3)))
+                SensorMultiData(
+                    name = nameGyro,
+                    unit = unitRadS,
+                    axes = xyz.zip(v.take(3)),
+                    onClick = onMotionClick?.let { cb -> { cb(Sensor.TYPE_GYROSCOPE) } }
+                )
             }
         }
     }

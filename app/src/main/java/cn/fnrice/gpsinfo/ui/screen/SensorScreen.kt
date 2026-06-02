@@ -1,5 +1,6 @@
 package cn.fnrice.gpsinfo.ui.screen
 
+import android.hardware.Sensor
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -55,9 +56,7 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     var showOrientationHelp by remember { mutableStateOf(false) }
     var showPhone3D by remember { mutableStateOf(false) }
     var showMotionAxes by remember { mutableStateOf(false) }
-    var motionX by remember { mutableStateOf(0f) }
-    var motionY by remember { mutableStateOf(0f) }
-    var motionZ by remember { mutableStateOf(0f) }
+    var motionSensorType by remember { mutableStateOf(0) }
 
     LaunchedEffect(orientationExpanded, motionExpanded, environmentExpanded) {
         viewModel.setSensorUiActive(orientationExpanded || motionExpanded || environmentExpanded)
@@ -98,8 +97,9 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
             sensorValues = sensorValues,
             isExpanded = motionExpanded,
             onExpandChange = { motionExpanded = it },
-            onMotionClick = { x, y, z ->
-                motionX = x; motionY = y; motionZ = z; showMotionAxes = true
+            onMotionClick = { sensorType ->
+                motionSensorType = sensorType
+                showMotionAxes = true
             }
         )
 
@@ -118,8 +118,8 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
 
     // 3D 手机姿态弹窗 — 从实时传感器数据读取姿态
     if (showPhone3D) {
-        val liveRv = sensorValues[android.hardware.Sensor.TYPE_ROTATION_VECTOR]
-            ?: sensorValues[android.hardware.Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR]
+        val liveRv = sensorValues[Sensor.TYPE_ROTATION_VECTOR]
+            ?: sensorValues[Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR]
         val liveOrientation = liveRv?.let { v ->
             val m = FloatArray(9)
             android.hardware.SensorManager.getRotationMatrixFromVector(m, v)
@@ -151,13 +151,25 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
         )
     }
 
-    // 运动坐标轴弹窗
+    // 运动坐标轴弹窗 — 从实时传感器数据读取
     if (showMotionAxes) {
+        val liveValues = sensorValues[motionSensorType]
+        val motionName = when (motionSensorType) {
+            Sensor.TYPE_ACCELEROMETER -> stringResource(R.string.sensor_name_accelerometer)
+            Sensor.TYPE_GRAVITY -> stringResource(R.string.sensor_name_gravity)
+            Sensor.TYPE_LINEAR_ACCELERATION -> stringResource(R.string.sensor_name_linear_acceleration)
+            Sensor.TYPE_GYROSCOPE -> stringResource(R.string.sensor_name_gyroscope)
+            else -> ""
+        }
         AlertDialog(
             onDismissRequest = { showMotionAxes = false },
-            title = { Text(stringResource(R.string.sensor_name_accelerometer)) },
+            title = { Text(motionName) },
             text = {
-                MotionAxesView(x = motionX, y = motionY, z = motionZ)
+                MotionAxesView(
+                    x = liveValues?.get(0) ?: 0f,
+                    y = liveValues?.get(1) ?: 0f,
+                    z = liveValues?.get(2) ?: 0f
+                )
             },
             confirmButton = {
                 Text(
