@@ -2,24 +2,23 @@ package cn.fnrice.gpsinfo.ui.screen
 
 import android.hardware.Sensor
 import android.hardware.SensorManager
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CompassCalibration
 import androidx.compose.material.icons.filled.Eco
-import androidx.compose.material.icons.filled.HighlightOff
 import androidx.compose.material.icons.filled.Speed
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -180,23 +179,25 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
 
 @Composable
 private fun SupportedRow(label: String, supported: Boolean) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f)
-        )
-        Icon(
-            imageVector = if (supported) Icons.Default.CheckCircle else Icons.Default.HighlightOff,
-            contentDescription = null,
-            tint = if (supported) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-            modifier = Modifier.padding(start = 8.dp)
-        )
+    val bgColor = if (supported) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
     }
+    val textColor = if (supported) {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+    }
+    Text(
+        text = label,
+        style = MaterialTheme.typography.bodyMedium,
+        color = textColor,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(bgColor, RoundedCornerShape(6.dp))
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    )
 }
 
 @Composable
