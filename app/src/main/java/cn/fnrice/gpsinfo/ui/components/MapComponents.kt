@@ -58,6 +58,15 @@ fun AMapViewContainer(
     val bitmapCache = remember { mutableMapOf<String, com.amap.api.maps.model.BitmapDescriptor>() }
 
     DisposableEffect(lifecycle) {
+        // Sync with current lifecycle state first (observer only catches future events)
+        val currentState = lifecycle.currentState
+        if (currentState.isAtLeast(Lifecycle.State.INITIALIZED)) {
+            mapView.onCreate(Bundle())
+        }
+        if (currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            mapView.onResume()
+        }
+
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_CREATE -> mapView.onCreate(Bundle())
@@ -69,6 +78,7 @@ fun AMapViewContainer(
         lifecycle.addObserver(observer)
         onDispose {
             lifecycle.removeObserver(observer)
+            mapView.onPause()
             mapView.onDestroy()
         }
     }
