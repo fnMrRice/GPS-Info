@@ -9,7 +9,12 @@ Android 实时 GNSS 卫星定位查看器。在极坐标天图上可视化可见
 - **卫星天图** — 地图上叠加极坐标图，显示卫星位置，按星座着色（GPS、GLONASS、Galileo、BeiDou、QZSS、SBAS、NavIC）
 - **实时卫星列表** — PRN、C/N0、仰角、方位角、载波频率、是否参与定位；同一卫星的多频信号（L1/L5/E5）自动合并
 - **位置信息卡** — 经纬度、海拔、速度、方向角、精度，支持 GPS/网络/最后已知来源标识
-- **传感器仪表盘** — 方向、运动（加速度计、陀螺仪、重力）、环境（磁场、光线、距离、气压）
+- **传感器仪表盘** — 独立传感器页面，可展开卡片分区显示：
+  - **支持的传感器** — 设备传感器能力，绿色/灰色标签展示，点击查看当前值
+  - **方向** — 方位角、俯仰/翻滚（旋转矢量）；点击可查看实时 3D 手机姿态
+  - **运动** — 加速度计、重力、线性加速度、陀螺仪，结构化 X/Y/Z 显示；点击任一项可查看 3D 坐标轴方向箭头
+  - **环境** — 磁场、光照、接近距离、气压；光照和接近传感器始终可见，即使尚无数据
+  - 支持 15 种传感器类型；仅在卡片展开时更新数据，节省资源
 - **设备信息与 GNSS 能力** — 制造商、型号、Android 版本、GNSS 硬件功能标志（Android 12+）
 - **自适应导航** — 手机底部栏、平板导航栏、桌面端抽屉，基于 `NavigationSuiteScaffold`
 - **多地图供应商** — Google Maps、高德地图、百度地图，根据网络连通性自动选择
@@ -88,6 +93,13 @@ app/src/main/java/cn/fnrice/gpsinfo/
       SkyView.kt               -- Canvas 极坐标天图
       MapComponents.kt         -- 高德地图和 Google Maps 集成
       SatelliteCard.kt         -- 可展开卫星详情卡片
+      SensorComponents.kt      -- SensorMultiData、SensorSingleData、SupportedChip
+      SupportedSensorsCard.kt  -- 设备传感器能力卡片
+      OrientationCard.kt       -- 方向数据卡片 + 3D 手机姿态
+      MotionCard.kt            -- 运动数据卡片 + 3D 坐标轴
+      EnvironmentCard.kt       -- 环境传感器数据卡片
+      SensorVisualization.kt   -- 3D 手机姿态 + 运动箭头可视化
+      MotionAxesView.kt        -- 3D 坐标轴 + 加速度方向箭头
       ...
     theme/                     -- Material 3 主题、配色、字体
 ```

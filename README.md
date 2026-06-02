@@ -9,7 +9,12 @@ A real-time GNSS satellite positioning viewer for Android. Visualize visible sat
 - **Satellite Sky View** — polar plot overlay on a map showing satellite positions, color-coded by constellation (GPS, GLONASS, Galileo, BeiDou, QZSS, SBAS, NavIC)
 - **Real-time Satellite List** — PRN, C/N0, elevation, azimuth, carrier frequency, used-in-fix status; multi-frequency signals (L1/L5/E5) grouped per satellite
 - **Location Card** — latitude, longitude, altitude, speed, bearing, accuracy with GPS/Network/Last Known source indicator
-- **Sensor Dashboard** — orientation, motion (accelerometer, gyroscope, gravity), and environment (magnetic field, light, proximity, pressure)
+- **Sensor Dashboard** — dedicated sensor page with expandable card sections:
+  - **Supported Sensors** — device sensor capabilities shown as green/gray chips, tap to view current values
+  - **Orientation** — azimuth, pitch/roll from rotation vector; tap to view real-time 3D phone orientation
+  - **Motion** — accelerometer, gravity, linear acceleration, gyroscope with structured X/Y/Z display; tap any item to view 3D coordinate axes with direction arrows
+  - **Environment** — magnetic field, light, proximity, pressure; light and proximity always visible even before first data arrives
+  - 15 sensor types supported; data updates only when cards are expanded to save resources
 - **Device Info & GNSS Capabilities** — manufacturer, model, Android version, hardware GNSS feature flags (Android 12+)
 - **Adaptive Navigation** — bottom bar on phones, navigation rail on tablets, drawer on desktop via `NavigationSuiteScaffold`
 - **Multiple Map Providers** — Google Maps, AMap (Gaode), Baidu Maps with auto-detection based on connectivity
@@ -88,6 +93,13 @@ app/src/main/java/cn/fnrice/gpsinfo/
       SkyView.kt               -- Canvas-based polar sky plot
       MapComponents.kt         -- AMap and Google Maps integration
       SatelliteCard.kt         -- Expandable satellite detail card
+      SensorComponents.kt      -- SensorMultiData, SensorSingleData, SupportedChip
+      SupportedSensorsCard.kt  -- Device sensor capabilities card
+      OrientationCard.kt       -- Orientation data card with 3D phone view
+      MotionCard.kt            -- Motion data card with 3D axes view
+      EnvironmentCard.kt       -- Environment sensor data card
+      SensorVisualization.kt   -- 3D phone orientation + motion arrow visualizations
+      MotionAxesView.kt        -- 3D coordinate axes with acceleration arrows
       ...
     theme/                     -- Material 3 theme, colors, typography
 ```
