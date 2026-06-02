@@ -1,5 +1,7 @@
 package cn.fnrice.gpsinfo.ui.screen
 
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +20,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +40,7 @@ import cn.fnrice.gpsinfo.ui.components.SensorCard
 import cn.fnrice.gpsinfo.ui.components.SkyViewCard
 import cn.fnrice.gpsinfo.ui.components.StatusHeader
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
+import kotlinx.coroutines.delay
 
 enum class SatelliteFilterStatus {
     ALL,
@@ -56,6 +60,18 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     var isMapInfoExpanded by remember { mutableStateOf(false) }
     var sensorCardExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    var showSearchHint by remember { mutableStateOf(false) }
+
+    // 搜星超时提示：30秒后如果仍无卫星数据，显示提示
+    LaunchedEffect(state.satellitesTotal) {
+        if (state.satellitesTotal == 0) {
+            showSearchHint = false
+            delay(30_000L)
+            showSearchHint = true
+        } else {
+            showSearchHint = false
+        }
+    }
 
     val actualMapProvider by viewModel.actualMapProvider.collectAsState()
     val filteredSatellites = remember(state.satellites, filterConstellation, filterStatus, context) {
@@ -113,7 +129,13 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
         contentPadding = PaddingValues(vertical = 8.dp),
     ) {
         item {
-            StatusHeader(state, actualMapProvider)
+            StatusHeader(
+                state = state,
+                mapProvider = actualMapProvider,
+                onGpsDisabledClick = {
+                    context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                }
+            )
         }
 
         item {
@@ -174,6 +196,14 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        if (showSearchHint) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(R.string.satellite_search_timeout_hint),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                        }
                     }
                 }
             }

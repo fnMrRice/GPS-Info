@@ -1,5 +1,6 @@
 package cn.fnrice.gpsinfo.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -12,7 +13,7 @@ import cn.fnrice.gpsinfo.data.GnssState
 import cn.fnrice.gpsinfo.data.MapProvider
 
 @Composable
-fun StatusHeader(state: GnssState, mapProvider: MapProvider) {
+fun StatusHeader(state: GnssState, mapProvider: MapProvider, onGpsDisabledClick: () -> Unit = {}) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -41,7 +42,10 @@ fun StatusHeader(state: GnssState, mapProvider: MapProvider) {
             }
         }
         if (!state.isLocationEnabled) {
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                modifier = Modifier.clickable { onGpsDisabledClick() }
+            ) {
                 Text(
                     stringResource(R.string.status_gps_disabled),
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
