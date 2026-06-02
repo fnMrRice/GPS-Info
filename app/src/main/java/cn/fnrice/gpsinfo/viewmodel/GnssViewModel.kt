@@ -526,7 +526,14 @@ class GnssViewModel : ViewModel() {
             hasProximity = sm.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null,
             hasLight = sm.getDefaultSensor(Sensor.TYPE_LIGHT) != null,
             hasRotationVector = sm.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) != null,
-            hasGravity = sm.getDefaultSensor(Sensor.TYPE_GRAVITY) != null
+            hasGravity = sm.getDefaultSensor(Sensor.TYPE_GRAVITY) != null,
+            hasLinearAcceleration = sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null,
+            hasGameRotationVector = sm.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR) != null,
+            hasGeoRotationVector = sm.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR) != null,
+            hasStepCounter = sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null,
+            hasStepDetector = sm.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR) != null,
+            hasAmbientTemperature = sm.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE) != null,
+            hasRelativeHumidity = sm.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY) != null,
         )
     }
 
@@ -552,5 +559,12 @@ data class SensorCapabilitiesInfo(
     val hasProximity: Boolean,
     val hasLight: Boolean,
     val hasRotationVector: Boolean,
-    val hasGravity: Boolean
+    val hasGravity: Boolean,
+    val hasLinearAcceleration: Boolean,
+    val hasGameRotationVector: Boolean,
+    val hasGeoRotationVector: Boolean,
+    val hasStepCounter: Boolean,
+    val hasStepDetector: Boolean,
+    val hasAmbientTemperature: Boolean,
+    val hasRelativeHumidity: Boolean,
 )

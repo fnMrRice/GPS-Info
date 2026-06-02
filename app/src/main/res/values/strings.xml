@@ -117,6 +117,14 @@
     <string name="sensor_section_orientation">Orientation</string>
     <string name="sensor_section_motion">Motion &amp; Acceleration</string>
     <string name="sensor_section_environment">Environment</string>
+    <string name="supported_sensors_title">Supported Sensors</string>
+    <string name="label_linear_acceleration">Linear Acceleration</string>
+    <string name="label_game_rotation_vector">Game Rotation Vector</string>
+    <string name="label_geo_rotation_vector">Geomagnetic Rotation Vector</string>
+    <string name="label_step_counter">Step Counter</string>
+    <string name="label_step_detector">Step Detector</string>
+    <string name="label_ambient_temperature">Ambient Temperature</string>
+    <string name="label_relative_humidity">Relative Humidity</string>
     <string name="sensor_azimuth">Azimuth: %1$.1f°</string>
     <string name="sensor_accelerometer">Accelerometer: X=%1$.2f, Y=%2$.2f, Z=%3$.2f m/s²</string>
     <string name="sensor_gyroscope">Gyroscope: X=%1$.2f, Y=%2$.2f, Z=%3$.2f rad/s</string>

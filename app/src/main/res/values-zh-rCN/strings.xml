@@ -117,6 +117,14 @@
     <string name="sensor_section_orientation">方向</string>
     <string name="sensor_section_motion">运动与加速度</string>
     <string name="sensor_section_environment">环境</string>
+    <string name="supported_sensors_title">支持的传感器</string>
+    <string name="label_linear_acceleration">线性加速度</string>
+    <string name="label_game_rotation_vector">游戏旋转矢量</string>
+    <string name="label_geo_rotation_vector">地磁旋转矢量</string>
+    <string name="label_step_counter">计步器</string>
+    <string name="label_step_detector">步行检测</string>
+    <string name="label_ambient_temperature">环境温度</string>
+    <string name="label_relative_humidity">相对湿度</string>
     <string name="sensor_azimuth">方位角: %1$.1f°</string>
     <string name="sensor_accelerometer">加速度计: X=%1$.2f, Y=%2$.2f, Z=%3$.2f m/s²</string>
     <string name="sensor_gyroscope">陀螺仪: X=%1$.2f, Y=%2$.2f, Z=%3$.2f rad/s</string>

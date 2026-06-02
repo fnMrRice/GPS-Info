@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import cn.fnrice.gpsinfo.R
 import cn.fnrice.gpsinfo.ui.components.DeviceInfoCard
 import cn.fnrice.gpsinfo.ui.components.GnssCapabilitiesCard
-import cn.fnrice.gpsinfo.ui.components.SensorCapabilitiesCard
 import cn.fnrice.gpsinfo.ui.components.SettingsEntryCard
 import cn.fnrice.gpsinfo.ui.components.ToastUtils
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
@@ -34,7 +33,6 @@ import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
 fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues, onNavigateToSettings: () -> Unit) {
     val context = LocalContext.current
     val capabilities = remember { viewModel.getGnssCapabilities(context) }
-    val sensorCaps = remember { viewModel.getSensorCapabilities(context) }
     val isDeveloperMode by viewModel.isDeveloperMode.collectAsState()
     var clickCount by remember { mutableIntStateOf(0) }
 
@@ -74,8 +72,6 @@ fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues, onNaviga
         DeviceInfoCard(onVersionClick)
 
         GnssCapabilitiesCard(capabilities)
-
-        SensorCapabilitiesCard(sensorCaps)
 
         Spacer(modifier = Modifier.height(8.dp))
         Text(
