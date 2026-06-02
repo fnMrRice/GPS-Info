@@ -116,8 +116,6 @@
     <string name="sensor_card_title">Sensors</string>
     <string name="sensor_section_orientation">Orientation</string>
     <string name="sensor_section_motion">Motion &amp; Acceleration</string>
-    <string name="sensor_section_magnetic">Magnetic Field</string>
-    <string name="sensor_section_light">Light</string>
     <string name="sensor_section_environment">Environment</string>
     <string name="sensor_azimuth">Azimuth: %1$.1f°</string>
     <string name="sensor_accelerometer">Accelerometer: X=%1$.2f, Y=%2$.2f, Z=%3$.2f m/s²</string>

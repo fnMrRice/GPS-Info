@@ -116,8 +116,6 @@
     <string name="sensor_card_title">传感器信息</string>
     <string name="sensor_section_orientation">方向</string>
     <string name="sensor_section_motion">运动与加速度</string>
-    <string name="sensor_section_magnetic">磁场</string>
-    <string name="sensor_section_light">光线</string>
     <string name="sensor_section_environment">环境</string>
     <string name="sensor_azimuth">方位角: %1$.1f°</string>
     <string name="sensor_accelerometer">加速度计: X=%1$.2f, Y=%2$.2f, Z=%3$.2f m/s²</string>
