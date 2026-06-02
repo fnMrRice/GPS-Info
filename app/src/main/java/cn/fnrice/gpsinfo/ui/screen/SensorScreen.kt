@@ -46,10 +46,10 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     val context = LocalContext.current
     val sensorCaps = remember { viewModel.getSensorCapabilities(context) }
 
-    var supportedExpanded by remember { mutableStateOf(false) }
-    var orientationExpanded by remember { mutableStateOf(true) }
-    var motionExpanded by remember { mutableStateOf(true) }
-    var environmentExpanded by remember { mutableStateOf(true) }
+    var supportedExpanded by remember { mutableStateOf(true) }
+    var orientationExpanded by remember { mutableStateOf(false) }
+    var motionExpanded by remember { mutableStateOf(false) }
+    var environmentExpanded by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
