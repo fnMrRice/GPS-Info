@@ -1,5 +1,7 @@
 # GPS Info
 
+English | [中文](README_zh.md)
+
 A real-time GNSS satellite positioning viewer for Android. Visualize visible satellites on a sky plot, inspect signal strength per constellation, and monitor device sensors — all in a Material 3 adaptive UI.
 
 ## Features
