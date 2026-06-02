@@ -135,4 +135,7 @@
     <string name="sensor_gravity">重力: X=%1$.2f, Y=%2$.2f, Z=%3$.2f m/s²</string>
     <string name="sensor_linear_acceleration">线性加速度: X=%1$.2f, Y=%2$.2f, Z=%3$.2f m/s²</string>
     <string name="sensor_orientation">姿态角: 方位=%1$.1f°, 俯仰=%2$.1f°, 翻滚=%3$.1f°</string>
+    <string name="sensor_help_icon_desc">帮助</string>
+    <string name="sensor_help_title">传感器可用状态</string>
+    <string name="sensor_help_message">绿色背景：该设备支持此传感器。\n灰色背景：该设备不支持此传感器。\n点击任意传感器可查看当前值。</string>
 </resources>

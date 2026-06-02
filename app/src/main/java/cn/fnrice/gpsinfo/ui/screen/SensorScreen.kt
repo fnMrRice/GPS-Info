@@ -21,7 +21,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CompassCalibration
 import androidx.compose.material.icons.filled.Eco
+import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,6 +56,7 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     var orientationExpanded by remember { mutableStateOf(false) }
     var motionExpanded by remember { mutableStateOf(false) }
     var environmentExpanded by remember { mutableStateOf(false) }
+    var showHelpDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(orientationExpanded, motionExpanded, environmentExpanded) {
         viewModel.setSensorUiActive(orientationExpanded || motionExpanded || environmentExpanded)
@@ -77,7 +82,17 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
             isExpandable = true,
             isExpanded = supportedExpanded,
             onExpandChange = { supportedExpanded = it },
-            icon = Icons.Default.CheckCircle
+            icon = Icons.Default.CheckCircle,
+            headerExtra = {
+                IconButton(onClick = { showHelpDialog = true }, modifier = Modifier.size(24.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.HelpOutline,
+                        contentDescription = stringResource(R.string.sensor_help_icon_desc),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
         ) {
             FlowRow(
                 modifier = Modifier
@@ -219,6 +234,21 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
         }
 
         Spacer(modifier = Modifier.height(4.dp))
+    }
+
+    if (showHelpDialog) {
+        AlertDialog(
+            onDismissRequest = { showHelpDialog = false },
+            title = { Text(stringResource(R.string.sensor_help_title)) },
+            text = { Text(stringResource(R.string.sensor_help_message)) },
+            confirmButton = {
+                Text(
+                    text = stringResource(android.R.string.ok),
+                    modifier = Modifier.clickable { showHelpDialog = false },
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        )
     }
 }
 
