@@ -26,7 +26,8 @@ fun OrientationCard(
     sensorValues: Map<Int, FloatArray>,
     isExpanded: Boolean,
     onExpandChange: (Boolean) -> Unit,
-    onHelpClick: () -> Unit
+    onHelpClick: () -> Unit,
+    onOrientationClick: ((pitch: Float, roll: Float, azimuth: Float) -> Unit)? = null
 ) {
     // 缓存旋转矩阵计算，仅在旋转矢量数据变化时重算
     val rvValues = sensorValues[Sensor.TYPE_ROTATION_VECTOR]
@@ -86,7 +87,8 @@ fun OrientationCard(
                 SensorMultiData(
                     name = nameOrientation,
                     unit = unitDeg,
-                    axes = listOf(axisAzim to azim, axisPitch to pitch, axisRoll to roll)
+                    axes = listOf(axisAzim to azim, axisPitch to pitch, axisRoll to roll),
+                    onClick = onOrientationClick?.let { { it(pitch, roll, azim) } }
                 )
             }
         }

@@ -35,6 +35,7 @@ import cn.fnrice.gpsinfo.R
 import cn.fnrice.gpsinfo.ui.components.EnvironmentCard
 import cn.fnrice.gpsinfo.ui.components.MotionCard
 import cn.fnrice.gpsinfo.ui.components.OrientationCard
+import cn.fnrice.gpsinfo.ui.components.Phone3DView
 import cn.fnrice.gpsinfo.ui.components.SupportedSensorsCard
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
 
@@ -51,6 +52,10 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     var environmentExpanded by remember { mutableStateOf(false) }
     var showHelpDialog by remember { mutableStateOf(false) }
     var showOrientationHelp by remember { mutableStateOf(false) }
+    var showPhone3D by remember { mutableStateOf(false) }
+    var phone3dPitch by remember { mutableStateOf(0f) }
+    var phone3dRoll by remember { mutableStateOf(0f) }
+    var phone3dAzimuth by remember { mutableStateOf(0f) }
 
     LaunchedEffect(orientationExpanded, motionExpanded, environmentExpanded) {
         viewModel.setSensorUiActive(orientationExpanded || motionExpanded || environmentExpanded)
@@ -83,7 +88,13 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
             sensorValues = sensorValues,
             isExpanded = orientationExpanded,
             onExpandChange = { orientationExpanded = it },
-            onHelpClick = { showOrientationHelp = true }
+            onHelpClick = { showOrientationHelp = true },
+            onOrientationClick = { pitch, roll, azimuth ->
+                phone3dPitch = pitch
+                phone3dRoll = roll
+                phone3dAzimuth = azimuth
+                showPhone3D = true
+            }
         )
 
         MotionCard(
@@ -104,6 +115,28 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     // 帮助弹窗
     SensorHelpDialog(show = showHelpDialog, onDismiss = { showHelpDialog = false })
     OrientationHelpDialog(show = showOrientationHelp, onDismiss = { showOrientationHelp = false })
+
+    // 3D 手机姿态弹窗
+    if (showPhone3D) {
+        AlertDialog(
+            onDismissRequest = { showPhone3D = false },
+            title = { Text(stringResource(R.string.sensor_section_orientation)) },
+            text = {
+                Phone3DView(
+                    pitch = phone3dPitch,
+                    roll = phone3dRoll,
+                    azimuth = phone3dAzimuth
+                )
+            },
+            confirmButton = {
+                Text(
+                    text = stringResource(android.R.string.ok),
+                    modifier = Modifier.clickable { showPhone3D = false },
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        )
+    }
 }
 
 @Composable

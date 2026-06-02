@@ -23,11 +23,13 @@ fun SensorMultiData(
     name: String,
     unit: String,
     axes: List<Pair<String, Float>>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .background(
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                 RoundedCornerShape(8.dp)
@@ -82,9 +84,10 @@ fun SensorSingleData(
     unit: String,
     value: Float,
     modifier: Modifier = Modifier,
-    format: String = "%.2f"
+    format: String = "%.2f",
+    onClick: (() -> Unit)? = null
 ) {
-    SensorSingleDataImpl(name, unit, format.format(value), modifier)
+    SensorSingleDataImpl(name, unit, format.format(value), modifier, onClick)
 }
 
 @Composable
@@ -94,9 +97,10 @@ fun SensorSingleData(
     value: Float?,
     noDataText: String,
     modifier: Modifier = Modifier,
-    format: String = "%.2f"
+    format: String = "%.2f",
+    onClick: (() -> Unit)? = null
 ) {
-    SensorSingleDataImpl(name, unit, value?.let { format.format(it) } ?: noDataText, modifier)
+    SensorSingleDataImpl(name, unit, value?.let { format.format(it) } ?: noDataText, modifier, onClick)
 }
 
 @Composable
@@ -104,11 +108,13 @@ private fun SensorSingleDataImpl(
     name: String,
     unit: String,
     valueText: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .background(
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                 RoundedCornerShape(8.dp)
