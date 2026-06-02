@@ -53,9 +53,6 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     var showHelpDialog by remember { mutableStateOf(false) }
     var showOrientationHelp by remember { mutableStateOf(false) }
     var showPhone3D by remember { mutableStateOf(false) }
-    var phone3dPitch by remember { mutableStateOf(0f) }
-    var phone3dRoll by remember { mutableStateOf(0f) }
-    var phone3dAzimuth by remember { mutableStateOf(0f) }
 
     LaunchedEffect(orientationExpanded, motionExpanded, environmentExpanded) {
         viewModel.setSensorUiActive(orientationExpanded || motionExpanded || environmentExpanded)
@@ -89,12 +86,7 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
             isExpanded = orientationExpanded,
             onExpandChange = { orientationExpanded = it },
             onHelpClick = { showOrientationHelp = true },
-            onOrientationClick = { pitch, roll, azimuth ->
-                phone3dPitch = pitch
-                phone3dRoll = roll
-                phone3dAzimuth = azimuth
-                showPhone3D = true
-            }
+            onOrientationClick = { _, _, _ -> showPhone3D = true }
         )
 
         MotionCard(
@@ -116,16 +108,29 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     SensorHelpDialog(show = showHelpDialog, onDismiss = { showHelpDialog = false })
     OrientationHelpDialog(show = showOrientationHelp, onDismiss = { showOrientationHelp = false })
 
-    // 3D 手机姿态弹窗
+    // 3D 手机姿态弹窗 — 从实时传感器数据读取姿态
     if (showPhone3D) {
+        val liveRv = sensorValues[android.hardware.Sensor.TYPE_ROTATION_VECTOR]
+            ?: sensorValues[android.hardware.Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR]
+        val liveOrientation = liveRv?.let { v ->
+            val m = FloatArray(9)
+            android.hardware.SensorManager.getRotationMatrixFromVector(m, v)
+            val o = FloatArray(3)
+            android.hardware.SensorManager.getOrientation(m, o)
+            Triple(
+                Math.toDegrees(o[1].toDouble()).toFloat(),  // pitch
+                Math.toDegrees(o[2].toDouble()).toFloat(),  // roll
+                Math.toDegrees(o[0].toDouble()).toFloat()   // azimuth
+            )
+        }
         AlertDialog(
             onDismissRequest = { showPhone3D = false },
             title = { Text(stringResource(R.string.sensor_section_orientation)) },
             text = {
                 Phone3DView(
-                    pitch = phone3dPitch,
-                    roll = phone3dRoll,
-                    azimuth = phone3dAzimuth
+                    pitch = liveOrientation?.first ?: 0f,
+                    roll = liveOrientation?.second ?: 0f,
+                    azimuth = liveOrientation?.third ?: state.azimuth
                 )
             },
             confirmButton = {
