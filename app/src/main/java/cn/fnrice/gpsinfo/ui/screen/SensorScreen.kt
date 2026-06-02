@@ -5,6 +5,8 @@ import android.hardware.SensorManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -67,27 +69,28 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
             onExpandChange = { supportedExpanded = it },
             icon = Icons.Default.CheckCircle
         ) {
-            Column(
+            FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                SupportedRow(stringResource(R.string.label_accelerometer), sensorCaps.hasAccelerometer)
-                SupportedRow(stringResource(R.string.label_gyroscope), sensorCaps.hasGyroscope)
-                SupportedRow(stringResource(R.string.label_magnetometer), sensorCaps.hasMagnetometer)
-                SupportedRow(stringResource(R.string.label_pressure), sensorCaps.hasPressure)
-                SupportedRow(stringResource(R.string.label_proximity), sensorCaps.hasProximity)
-                SupportedRow(stringResource(R.string.label_light), sensorCaps.hasLight)
-                SupportedRow(stringResource(R.string.label_rotation_vector), sensorCaps.hasRotationVector)
-                SupportedRow(stringResource(R.string.label_gravity), sensorCaps.hasGravity)
-                SupportedRow(stringResource(R.string.label_linear_acceleration), sensorCaps.hasLinearAcceleration)
-                SupportedRow(stringResource(R.string.label_game_rotation_vector), sensorCaps.hasGameRotationVector)
-                SupportedRow(stringResource(R.string.label_geo_rotation_vector), sensorCaps.hasGeoRotationVector)
-                SupportedRow(stringResource(R.string.label_step_counter), sensorCaps.hasStepCounter)
-                SupportedRow(stringResource(R.string.label_step_detector), sensorCaps.hasStepDetector)
-                SupportedRow(stringResource(R.string.label_ambient_temperature), sensorCaps.hasAmbientTemperature)
-                SupportedRow(stringResource(R.string.label_relative_humidity), sensorCaps.hasRelativeHumidity)
+                SupportedChip(stringResource(R.string.label_accelerometer), sensorCaps.hasAccelerometer)
+                SupportedChip(stringResource(R.string.label_gyroscope), sensorCaps.hasGyroscope)
+                SupportedChip(stringResource(R.string.label_magnetometer), sensorCaps.hasMagnetometer)
+                SupportedChip(stringResource(R.string.label_pressure), sensorCaps.hasPressure)
+                SupportedChip(stringResource(R.string.label_proximity), sensorCaps.hasProximity)
+                SupportedChip(stringResource(R.string.label_light), sensorCaps.hasLight)
+                SupportedChip(stringResource(R.string.label_rotation_vector), sensorCaps.hasRotationVector)
+                SupportedChip(stringResource(R.string.label_gravity), sensorCaps.hasGravity)
+                SupportedChip(stringResource(R.string.label_linear_acceleration), sensorCaps.hasLinearAcceleration)
+                SupportedChip(stringResource(R.string.label_game_rotation_vector), sensorCaps.hasGameRotationVector)
+                SupportedChip(stringResource(R.string.label_geo_rotation_vector), sensorCaps.hasGeoRotationVector)
+                SupportedChip(stringResource(R.string.label_step_counter), sensorCaps.hasStepCounter)
+                SupportedChip(stringResource(R.string.label_step_detector), sensorCaps.hasStepDetector)
+                SupportedChip(stringResource(R.string.label_ambient_temperature), sensorCaps.hasAmbientTemperature)
+                SupportedChip(stringResource(R.string.label_relative_humidity), sensorCaps.hasRelativeHumidity)
             }
         }
 
@@ -178,7 +181,7 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
 }
 
 @Composable
-private fun SupportedRow(label: String, supported: Boolean) {
+private fun SupportedChip(label: String, supported: Boolean) {
     val bgColor = if (supported) {
         MaterialTheme.colorScheme.primaryContainer
     } else {
@@ -191,12 +194,11 @@ private fun SupportedRow(label: String, supported: Boolean) {
     }
     Text(
         text = label,
-        style = MaterialTheme.typography.bodyMedium,
+        style = MaterialTheme.typography.bodySmall,
         color = textColor,
         modifier = Modifier
-            .fillMaxWidth()
             .background(bgColor, RoundedCornerShape(6.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .padding(horizontal = 10.dp, vertical = 6.dp)
     )
 }
 
