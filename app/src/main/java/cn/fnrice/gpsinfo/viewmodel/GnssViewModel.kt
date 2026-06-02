@@ -398,6 +398,8 @@ class GnssViewModel : ViewModel() {
         activeSensors.forEach { sensor ->
             sensorManager.registerListener(sensorListener, sensor, SensorManager.SENSOR_DELAY_UI)
         }
+        // flush 一次，让慢速传感器（光照、接近）尽快返回初始值
+        sensorListener?.let { sensorManager.flush(it) }
 
         var firstSatelliteStatusReceived = false
         val callback = object : GnssStatus.Callback() {

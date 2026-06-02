@@ -84,6 +84,28 @@ fun SensorSingleData(
     modifier: Modifier = Modifier,
     format: String = "%.2f"
 ) {
+    SensorSingleDataImpl(name, unit, format.format(value), modifier)
+}
+
+@Composable
+fun SensorSingleData(
+    name: String,
+    unit: String,
+    value: Float?,
+    noDataText: String,
+    modifier: Modifier = Modifier,
+    format: String = "%.2f"
+) {
+    SensorSingleDataImpl(name, unit, value?.let { format.format(it) } ?: noDataText, modifier)
+}
+
+@Composable
+private fun SensorSingleDataImpl(
+    name: String,
+    unit: String,
+    valueText: String,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -106,7 +128,7 @@ fun SensorSingleData(
             verticalAlignment = Alignment.Bottom
         ) {
             Text(
-                text = format.format(value),
+                text = valueText,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface

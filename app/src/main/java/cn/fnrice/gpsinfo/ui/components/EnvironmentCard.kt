@@ -49,12 +49,20 @@ fun EnvironmentCard(
             sensorValues[Sensor.TYPE_MAGNETIC_FIELD]?.let { v ->
                 SensorMultiData(name = nameMag, unit = unitUt, axes = xyz.zip(v.take(3)))
             }
-            sensorValues[Sensor.TYPE_LIGHT]?.let { v ->
-                SensorSingleData(name = nameLight, unit = unitLx, value = v[0], format = "%.1f")
-            }
-            sensorValues[Sensor.TYPE_PROXIMITY]?.let { v ->
-                SensorSingleData(name = nameProximity, unit = unitCm, value = v[0], format = "%.1f")
-            }
+            SensorSingleData(
+                name = nameLight,
+                unit = unitLx,
+                value = sensorValues[Sensor.TYPE_LIGHT]?.get(0),
+                noDataText = "--",
+                format = "%.1f"
+            )
+            SensorSingleData(
+                name = nameProximity,
+                unit = unitCm,
+                value = sensorValues[Sensor.TYPE_PROXIMITY]?.get(0),
+                noDataText = "--",
+                format = "%.1f"
+            )
             sensorValues[Sensor.TYPE_PRESSURE]?.let { v ->
                 SensorSingleData(name = namePressure, unit = unitHpa, value = v[0])
             }
