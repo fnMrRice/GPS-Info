@@ -287,22 +287,48 @@ class GnssViewModel : ViewModel() {
             return
         }
 
+        // AGPS: 尝试注入XTRA辅助数据以加速搜星
+        try {
+            lm.sendExtraCommand("gps", "force_xtra_inject", null)
+            addLog("AGPS: XTRA data injection requested")
+        } catch (e: Exception) {
+            addLog("AGPS: XTRA injection failed: ${e.message}")
+        }
+
+        val sensorThrottleMs = 100L
+        var lastSensorFlushTime = 0L
+        val pendingSensorValues = mutableMapOf<Int, FloatArray>()
+        var pendingAzimuth: Float? = null
+
         sensorListener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
-                if (event.sensor.type == Sensor.TYPE_ROTATION_VECTOR || event.sensor.type == Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR) {
+                val type = event.sensor.type
+                pendingSensorValues[type] = event.values.clone()
+
+                if (type == Sensor.TYPE_ROTATION_VECTOR || type == Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR) {
                     val rotationMatrix = FloatArray(9)
                     SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
                     val orientation = FloatArray(3)
                     SensorManager.getOrientation(rotationMatrix, orientation)
-                    val azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
-                    _state.value = _state.value.copy(
-                        azimuth = azimuth,
-                        sensorValues = _state.value.sensorValues + (event.sensor.type to event.values.clone())
-                    )
-                } else {
-                    _state.value = _state.value.copy(
-                        sensorValues = _state.value.sensorValues + (event.sensor.type to event.values.clone())
-                    )
+                    pendingAzimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
+                }
+
+                val now = System.currentTimeMillis()
+                if (now - lastSensorFlushTime >= sensorThrottleMs) {
+                    lastSensorFlushTime = now
+                    val newAzimuth = pendingAzimuth
+                    if (newAzimuth != null) {
+                        _state.value = _state.value.copy(
+                            azimuth = newAzimuth,
+                            sensorValues = _state.value.sensorValues + pendingSensorValues.toMap()
+                        )
+                        pendingAzimuth = null
+                    } else {
+                        _state.value = _state.value.copy(
+                            sensorValues = _state.value.sensorValues + pendingSensorValues.toMap()
+                        )
+                    }
+                    pendingSensorValues.clear()
                 }
             }
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
