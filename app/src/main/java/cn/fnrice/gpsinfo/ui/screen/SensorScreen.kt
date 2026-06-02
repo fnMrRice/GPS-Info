@@ -3,6 +3,7 @@ package cn.fnrice.gpsinfo.ui.screen
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -29,15 +30,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cn.fnrice.gpsinfo.R
 import cn.fnrice.gpsinfo.ui.components.AppCard
+import cn.fnrice.gpsinfo.ui.components.ToastUtils
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
-import cn.fnrice.gpsinfo.viewmodel.SensorCapabilitiesInfo
 
 @Composable
 fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
@@ -46,7 +46,7 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     val context = LocalContext.current
     val sensorCaps = remember { viewModel.getSensorCapabilities(context) }
 
-    var supportedExpanded by remember { mutableStateOf(true) }
+    var supportedExpanded by remember { mutableStateOf(false) }
     var orientationExpanded by remember { mutableStateOf(true) }
     var motionExpanded by remember { mutableStateOf(true) }
     var environmentExpanded by remember { mutableStateOf(true) }
@@ -76,21 +76,53 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                SupportedChip(stringResource(R.string.label_accelerometer), sensorCaps.hasAccelerometer)
-                SupportedChip(stringResource(R.string.label_gyroscope), sensorCaps.hasGyroscope)
-                SupportedChip(stringResource(R.string.label_magnetometer), sensorCaps.hasMagnetometer)
-                SupportedChip(stringResource(R.string.label_pressure), sensorCaps.hasPressure)
-                SupportedChip(stringResource(R.string.label_proximity), sensorCaps.hasProximity)
-                SupportedChip(stringResource(R.string.label_light), sensorCaps.hasLight)
-                SupportedChip(stringResource(R.string.label_rotation_vector), sensorCaps.hasRotationVector)
-                SupportedChip(stringResource(R.string.label_gravity), sensorCaps.hasGravity)
-                SupportedChip(stringResource(R.string.label_linear_acceleration), sensorCaps.hasLinearAcceleration)
-                SupportedChip(stringResource(R.string.label_game_rotation_vector), sensorCaps.hasGameRotationVector)
-                SupportedChip(stringResource(R.string.label_geo_rotation_vector), sensorCaps.hasGeoRotationVector)
-                SupportedChip(stringResource(R.string.label_step_counter), sensorCaps.hasStepCounter)
-                SupportedChip(stringResource(R.string.label_step_detector), sensorCaps.hasStepDetector)
-                SupportedChip(stringResource(R.string.label_ambient_temperature), sensorCaps.hasAmbientTemperature)
-                SupportedChip(stringResource(R.string.label_relative_humidity), sensorCaps.hasRelativeHumidity)
+                val sensorTypeMap = mapOf(
+                    R.string.label_accelerometer to Sensor.TYPE_ACCELEROMETER,
+                    R.string.label_gyroscope to Sensor.TYPE_GYROSCOPE,
+                    R.string.label_magnetometer to Sensor.TYPE_MAGNETIC_FIELD,
+                    R.string.label_pressure to Sensor.TYPE_PRESSURE,
+                    R.string.label_proximity to Sensor.TYPE_PROXIMITY,
+                    R.string.label_light to Sensor.TYPE_LIGHT,
+                    R.string.label_rotation_vector to Sensor.TYPE_ROTATION_VECTOR,
+                    R.string.label_gravity to Sensor.TYPE_GRAVITY,
+                    R.string.label_linear_acceleration to Sensor.TYPE_LINEAR_ACCELERATION,
+                    R.string.label_game_rotation_vector to Sensor.TYPE_GAME_ROTATION_VECTOR,
+                    R.string.label_geo_rotation_vector to Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR,
+                    R.string.label_step_counter to Sensor.TYPE_STEP_COUNTER,
+                    R.string.label_step_detector to Sensor.TYPE_STEP_DETECTOR,
+                    R.string.label_ambient_temperature to Sensor.TYPE_AMBIENT_TEMPERATURE,
+                    R.string.label_relative_humidity to Sensor.TYPE_RELATIVE_HUMIDITY,
+                )
+                val supportedMap = mapOf(
+                    R.string.label_accelerometer to sensorCaps.hasAccelerometer,
+                    R.string.label_gyroscope to sensorCaps.hasGyroscope,
+                    R.string.label_magnetometer to sensorCaps.hasMagnetometer,
+                    R.string.label_pressure to sensorCaps.hasPressure,
+                    R.string.label_proximity to sensorCaps.hasProximity,
+                    R.string.label_light to sensorCaps.hasLight,
+                    R.string.label_rotation_vector to sensorCaps.hasRotationVector,
+                    R.string.label_gravity to sensorCaps.hasGravity,
+                    R.string.label_linear_acceleration to sensorCaps.hasLinearAcceleration,
+                    R.string.label_game_rotation_vector to sensorCaps.hasGameRotationVector,
+                    R.string.label_geo_rotation_vector to sensorCaps.hasGeoRotationVector,
+                    R.string.label_step_counter to sensorCaps.hasStepCounter,
+                    R.string.label_step_detector to sensorCaps.hasStepDetector,
+                    R.string.label_ambient_temperature to sensorCaps.hasAmbientTemperature,
+                    R.string.label_relative_humidity to sensorCaps.hasRelativeHumidity,
+                )
+                sensorTypeMap.forEach { (resId, sensorType) ->
+                    val label = stringResource(resId)
+                    val supported = supportedMap[resId] ?: false
+                    SupportedChip(label, supported) {
+                        val values = sensorValues[sensorType]
+                        if (values != null) {
+                            val valueStr = values.joinToString(", ") { "%.2f".format(it) }
+                            ToastUtils.showToast(context, "$label: $valueStr")
+                        } else {
+                            ToastUtils.showToast(context, "$label: --")
+                        }
+                    }
+                }
             }
         }
 
@@ -181,7 +213,7 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
 }
 
 @Composable
-private fun SupportedChip(label: String, supported: Boolean) {
+private fun SupportedChip(label: String, supported: Boolean, onClick: () -> Unit = {}) {
     val bgColor = if (supported) {
         MaterialTheme.colorScheme.primaryContainer
     } else {
@@ -197,6 +229,7 @@ private fun SupportedChip(label: String, supported: Boolean) {
         style = MaterialTheme.typography.bodySmall,
         color = textColor,
         modifier = Modifier
+            .clickable(onClick = onClick)
             .background(bgColor, RoundedCornerShape(6.dp))
             .padding(horizontal = 10.dp, vertical = 6.dp)
     )
