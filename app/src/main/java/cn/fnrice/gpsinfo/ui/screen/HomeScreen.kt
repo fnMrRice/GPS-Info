@@ -208,7 +208,7 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                 }
             }
         } else {
-            items(filteredSatellites, key = { "${it.constellationType}-${it.svid}" }) { sat ->
+            items(filteredSatellites, key = { "${it.constellationType}-${it.svid}-${it.carrierFrequencyHz}-${it.basebandCn0DbHz}" }) { sat ->
                 SatelliteCard(sat)
             }
         }
