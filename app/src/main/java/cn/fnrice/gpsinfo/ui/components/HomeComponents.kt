@@ -42,9 +42,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kotlin.math.sqrt
 import cn.fnrice.gpsinfo.R
 import cn.fnrice.gpsinfo.data.GnssState
 import cn.fnrice.gpsinfo.data.MapProvider
@@ -172,6 +174,15 @@ fun SkyViewCard(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
+                        .graphicsLayer {
+                            if (isCompassEnabled) {
+                                rotationZ = -state.azimuth
+                                // 放大以避免旋转后出现空白角落
+                                val scale = sqrt(2f)
+                                scaleX = scale
+                                scaleY = scale
+                            }
+                        }
                         .clip(RoundedCornerShape(8.dp))
                 ) {
                     when (actualMapProvider) {
