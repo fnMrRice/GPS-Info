@@ -228,13 +228,14 @@ fun GoogleMapViewContainer(
                     )
                 }
 
-                Marker(
-                    key = satId,
-                    state = rememberUpdatedMarkerState(position = satLatLng),
-                    anchor = androidx.compose.ui.geometry.Offset(0.5f, 0.5f),
-                    title = sat.svid.toString(),
-                    icon = bitmapDescriptor
-                )
+                key(satId) {
+                    Marker(
+                        state = rememberUpdatedMarkerState(position = satLatLng),
+                        anchor = androidx.compose.ui.geometry.Offset(0.5f, 0.5f),
+                        title = sat.svid.toString(),
+                        icon = bitmapDescriptor
+                    )
+                }
             }
         }
     }
