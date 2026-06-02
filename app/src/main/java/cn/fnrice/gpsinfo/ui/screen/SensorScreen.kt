@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -166,11 +167,19 @@ fun SensorScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 SensorItem(stringResource(R.string.sensor_azimuth, state.azimuth))
-                sensorValues[Sensor.TYPE_ROTATION_VECTOR]?.let { values ->
-                    orientationText(values)?.let { SensorItem(it) }
-                }
-                sensorValues[Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR]?.let { values ->
-                    orientationText(values)?.let { SensorItem(it) }
+                val rvValues = sensorValues[Sensor.TYPE_ROTATION_VECTOR]
+                    ?: sensorValues[Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR]
+                rvValues?.let { values ->
+                    val rotMatrix = FloatArray(9)
+                    SensorManager.getRotationMatrixFromVector(rotMatrix, values)
+                    val orient = FloatArray(3)
+                    SensorManager.getOrientation(rotMatrix, orient)
+                    SensorItem(stringResource(
+                        R.string.sensor_orientation,
+                        Math.toDegrees(orient[0].toDouble()).toFloat(),
+                        Math.toDegrees(orient[1].toDouble()).toFloat(),
+                        Math.toDegrees(orient[2].toDouble()).toFloat()
+                    ))
                 }
             }
         }
@@ -282,14 +291,4 @@ private fun SensorItem(text: String) {
         style = MaterialTheme.typography.bodyMedium,
         modifier = Modifier.fillMaxWidth()
     )
-}
-
-private fun orientationText(values: FloatArray): String? {
-    val rotationMatrix = FloatArray(9)
-    SensorManager.getRotationMatrixFromVector(rotationMatrix, values)
-    val orientation = FloatArray(3)
-    SensorManager.getOrientation(rotationMatrix, orientation)
-    return "Orientation: Azim=${Math.toDegrees(orientation[0].toDouble()).toFloat()}°, " +
-            "Pitch=${Math.toDegrees(orientation[1].toDouble()).toFloat()}°, " +
-            "Roll=${Math.toDegrees(orientation[2].toDouble()).toFloat()}°"
 }
