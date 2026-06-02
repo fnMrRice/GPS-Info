@@ -20,7 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cn.fnrice.gpsinfo.R
-import cn.fnrice.gpsinfo.data.SensorCapabilitiesInfo
+import cn.fnrice.gpsinfo.viewmodel.SensorCapabilitiesInfo
 
 data class SensorChipInfo(val labelResId: Int, val sensorType: Int, val supported: Boolean)
 
