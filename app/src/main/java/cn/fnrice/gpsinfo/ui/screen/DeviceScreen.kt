@@ -20,7 +20,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cn.fnrice.gpsinfo.R
-import cn.fnrice.gpsinfo.ui.components.DeviceInfoCard
+import cn.fnrice.gpsinfo.ui.components.AppInfoCard
+import cn.fnrice.gpsinfo.ui.components.DisplayInfoCard
+import cn.fnrice.gpsinfo.ui.components.HardwareInfoCard
+import cn.fnrice.gpsinfo.ui.components.LocaleInfoCard
+import cn.fnrice.gpsinfo.ui.components.MemoryInfoCard
+import cn.fnrice.gpsinfo.ui.components.SystemInfoCard
 import cn.fnrice.gpsinfo.ui.components.ToastUtils
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
 
@@ -56,7 +61,12 @@ fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        DeviceInfoCard(onVersionClick)
+        HardwareInfoCard()
+        SystemInfoCard()
+        DisplayInfoCard()
+        MemoryInfoCard()
+        LocaleInfoCard()
+        AppInfoCard(onVersionClick)
 
         Spacer(modifier = Modifier.height(12.dp))
     }

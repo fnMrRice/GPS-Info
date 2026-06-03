@@ -11,18 +11,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.Apps
-import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.filled.ScreenRotation
+import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,22 +30,55 @@ import cn.fnrice.gpsinfo.R
 import java.io.File
 import java.util.Locale
 
-@Composable
-fun DeviceInfoCard(onVersionClick: () -> Unit) {
-    val context = LocalContext.current
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+// 厂商中英文映射
+private val manufacturerMap = mapOf(
+    "xiaomi" to "小米",
+    "huawei" to "华为",
+    "honor" to "荣耀",
+    "oneplus" to "一加",
+    "oppo" to "OPPO",
+    "vivo" to "vivo",
+    "samsung" to "三星",
+    "realme" to "真我",
+    "meizu" to "魅族",
+    "zte" to "中兴",
+    "lenovo" to "联想",
+    "motorola" to "摩托罗拉",
+    "nokia" to "诺基亚",
+    "sony" to "索尼",
+    "asus" to "华硕",
+    "google" to "谷歌",
+    "tecno" to "传音",
+    "black shark" to "黑鲨",
+    "nothing" to "Nothing",
+    "fairphone" to "Fairphone",
+)
 
+/**
+ * 根据当前语言环境，为已知厂商添加本地化名称
+ * 中文环境: "小米 (Xiaomi)"，英文环境: "Xiaomi"
+ */
+private fun localizedManufacturer(raw: String): String {
+    val isChinese = Locale.getDefault().language == "zh"
+    val lower = raw.lowercase()
+    val match = manufacturerMap[lower]
+    return when {
+        match == null -> raw
+        isChinese && match != raw -> "$match ($raw)"
+        !isChinese && match != raw -> "$raw ($match)"
+        else -> raw
+    }
+}
+
+// ── 硬件信息卡片 ──
+@Composable
+fun HardwareInfoCard() {
     DeviceDetailCard(
-        title = stringResource(R.string.device_info),
+        title = stringResource(R.string.section_hardware),
         icon = Icons.Default.PhoneAndroid,
-        isExpandable = true,
-        isExpanded = isExpanded,
-        onExpandChange = { isExpanded = it }
     ) {
-        // 设备硬件
-        SectionLabel(stringResource(R.string.section_hardware))
-        InfoRow(stringResource(R.string.label_manufacturer), Build.MANUFACTURER)
-        InfoRow(stringResource(R.string.label_brand), Build.BRAND)
+        InfoRow(stringResource(R.string.label_manufacturer), localizedManufacturer(Build.MANUFACTURER))
+        InfoRow(stringResource(R.string.label_brand), localizedManufacturer(Build.BRAND))
         InfoRow(stringResource(R.string.label_model), Build.MODEL)
         InfoRow(stringResource(R.string.label_product), Build.PRODUCT)
         InfoRow(stringResource(R.string.label_device), Build.DEVICE)
@@ -59,11 +88,16 @@ fun DeviceInfoCard(onVersionClick: () -> Unit) {
             InfoRow(stringResource(R.string.label_soc_manufacturer), Build.SOC_MANUFACTURER)
             InfoRow(stringResource(R.string.label_soc_model), Build.SOC_MODEL)
         }
+    }
+}
 
-        Spacer(Modifier.height(8.dp))
-
-        // 系统软件
-        SectionLabel(stringResource(R.string.section_system))
+// ── 系统信息卡片 ──
+@Composable
+fun SystemInfoCard() {
+    DeviceDetailCard(
+        title = stringResource(R.string.section_system),
+        icon = Icons.Default.Android,
+    ) {
         InfoRow(stringResource(R.string.label_android_version), "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
         InfoRow(stringResource(R.string.label_build_id), Build.ID)
         InfoRow(stringResource(R.string.label_build_display), Build.DISPLAY)
@@ -76,49 +110,71 @@ fun DeviceInfoCard(onVersionClick: () -> Unit) {
             InfoRow(stringResource(R.string.label_base_os), if (baseOs.isNotEmpty()) baseOs else "---")
         }
         InfoRow(stringResource(R.string.label_kernel), getKernelVersion())
+    }
+}
 
-        Spacer(Modifier.height(8.dp))
-
-        // 屏幕信息
-        SectionLabel(stringResource(R.string.section_display))
-        val displayInfo = remember { getDisplayInfo(context) }
+// ── 屏幕信息卡片 ──
+@Composable
+fun DisplayInfoCard() {
+    val context = LocalContext.current
+    val displayInfo = remember { getDisplayInfo(context) }
+    DeviceDetailCard(
+        title = stringResource(R.string.section_display),
+        icon = Icons.Default.Straighten,
+    ) {
         InfoRow(stringResource(R.string.label_resolution), displayInfo.resolution)
         InfoRow(stringResource(R.string.label_density), displayInfo.density)
         InfoRow(stringResource(R.string.label_density_dpi), displayInfo.densityDpi)
+    }
+}
 
-        Spacer(Modifier.height(8.dp))
-
-        // 内存信息
-        SectionLabel(stringResource(R.string.section_memory))
-        val memInfo = remember { getMemoryInfo(context) }
+// ── 内存信息卡片 ──
+@Composable
+fun MemoryInfoCard() {
+    val context = LocalContext.current
+    val memInfo = remember { getMemoryInfo(context) }
+    DeviceDetailCard(
+        title = stringResource(R.string.section_memory),
+        icon = Icons.Default.Memory,
+    ) {
         InfoRow(stringResource(R.string.label_total_ram), memInfo.totalRam)
         InfoRow(stringResource(R.string.label_available_ram), memInfo.availableRam)
+    }
+}
 
-        Spacer(Modifier.height(8.dp))
-
-        // 区域与语言
-        SectionLabel(stringResource(R.string.section_locale))
-        val locale = Locale.getDefault()
+// ── 区域与语言卡片 ──
+@Composable
+fun LocaleInfoCard() {
+    val locale = Locale.getDefault()
+    DeviceDetailCard(
+        title = stringResource(R.string.section_locale),
+        icon = Icons.Default.Public,
+    ) {
         InfoRow(stringResource(R.string.label_language), "${locale.language} (${locale.displayLanguage})")
         InfoRow(stringResource(R.string.label_country), "${locale.country} (${locale.displayCountry})")
         InfoRow(stringResource(R.string.label_timezone), java.util.TimeZone.getDefault().id)
+    }
+}
 
-        Spacer(Modifier.height(8.dp))
-
-        // 应用信息
-        SectionLabel(stringResource(R.string.section_app))
-        val packageInfo = remember(context) { getPackageInfo(context) }
-        val versionName = packageInfo?.versionName ?: "1.0.0"
-        val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            packageInfo?.longVersionCode?.toString() ?: "1"
-        } else {
-            @Suppress("DEPRECATION")
-            packageInfo?.versionCode?.toString() ?: "1"
-        }
+// ── 应用信息卡片 ──
+@Composable
+fun AppInfoCard(onVersionClick: () -> Unit) {
+    val context = LocalContext.current
+    val packageInfo = remember(context) { getPackageInfo(context) }
+    val versionName = packageInfo?.versionName ?: "1.0.0"
+    val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        packageInfo?.longVersionCode?.toString() ?: "1"
+    } else {
+        @Suppress("DEPRECATION")
+        packageInfo?.versionCode?.toString() ?: "1"
+    }
+    DeviceDetailCard(
+        title = stringResource(R.string.section_app),
+        icon = Icons.Default.Apps,
+    ) {
         InfoRow(stringResource(R.string.label_package_name), context.packageName)
         InfoRow(stringResource(R.string.label_min_sdk), "API ${context.applicationInfo.minSdkVersion}")
         InfoRow(stringResource(R.string.label_target_sdk), "API ${context.applicationInfo.targetSdkVersion}")
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -143,20 +199,11 @@ fun DeviceInfoCard(onVersionClick: () -> Unit) {
     }
 }
 
-@Composable
-private fun SectionLabel(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
-    )
-}
+// ── 工具函数 ──
 
 private fun getKernelVersion(): String {
     return try {
         File("/proc/version").readText().trim().let { full ->
-            // 提取版本号部分，如 "5.15.104-android14-..."
             val match = Regex("""\d+\.\d+\.\d+[-\w]*""").find(full)
             match?.value ?: full.take(60)
         }
@@ -165,9 +212,9 @@ private fun getKernelVersion(): String {
     }
 }
 
-private data class DisplayInfo(val resolution: String, val density: String, val densityDpi: String)
+private data class DisplayInfoData(val resolution: String, val density: String, val densityDpi: String)
 
-private fun getDisplayInfo(context: Context): DisplayInfo {
+private fun getDisplayInfo(context: Context): DisplayInfoData {
     return try {
         val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         val metrics = DisplayMetrics()
@@ -182,29 +229,29 @@ private fun getDisplayInfo(context: Context): DisplayInfo {
             metrics.densityDpi <= 640 -> "xxxhdpi"
             else -> "xxxhdpi+"
         }
-        DisplayInfo(
+        DisplayInfoData(
             resolution = "${metrics.widthPixels} × ${metrics.heightPixels}",
             density = "${metrics.density}x ($densityBucket)",
             densityDpi = "${metrics.densityDpi} dpi"
         )
     } catch (_: Exception) {
-        DisplayInfo("---", "---", "---")
+        DisplayInfoData("---", "---", "---")
     }
 }
 
-private data class MemoryInfo(val totalRam: String, val availableRam: String)
+private data class MemoryInfoData(val totalRam: String, val availableRam: String)
 
-private fun getMemoryInfo(context: Context): MemoryInfo {
+private fun getMemoryInfo(context: Context): MemoryInfoData {
     return try {
         val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val memInfo = ActivityManager.MemoryInfo()
         am.getMemoryInfo(memInfo)
-        MemoryInfo(
+        MemoryInfoData(
             totalRam = formatBytes(memInfo.totalMem),
             availableRam = formatBytes(memInfo.availMem)
         )
     } catch (_: Exception) {
-        MemoryInfo("---", "---")
+        MemoryInfoData("---", "---")
     }
 }
 
