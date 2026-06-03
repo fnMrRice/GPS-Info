@@ -88,6 +88,7 @@
     <string name="label_security_patch">Security Patch</string>
     <string name="label_base_os">Base OS</string>
     <string name="label_kernel">Kernel</string>
+    <string name="label_baseband">Baseband</string>
 
     <!-- Display -->
     <string name="label_resolution">Resolution</string>

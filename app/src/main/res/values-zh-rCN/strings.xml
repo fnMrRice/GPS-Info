@@ -88,6 +88,7 @@
     <string name="label_security_patch">安全补丁</string>
     <string name="label_base_os">基础 OS</string>
     <string name="label_kernel">内核</string>
+    <string name="label_baseband">基带</string>
 
     <!-- Display -->
     <string name="label_resolution">分辨率</string>
