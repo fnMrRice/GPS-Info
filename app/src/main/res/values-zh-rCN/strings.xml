@@ -65,7 +65,7 @@
     <string name="section_display">屏幕</string>
     <string name="section_memory">内存</string>
     <string name="section_locale">区域与语言</string>
-    <string name="section_app">应用</string>
+    <string name="section_app">当前应用</string>
 
     <!-- Hardware -->
     <string name="label_manufacturer">制造商</string>
