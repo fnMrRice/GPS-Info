@@ -53,9 +53,9 @@ fun HardwareInfoCard() {
         InfoRow(stringResource(R.string.label_board), Build.BOARD)
         InfoRow(stringResource(R.string.label_hardware), Build.HARDWARE)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            InfoRow(stringResource(R.string.label_soc_manufacturer), Build.SOC_MANUFACTURER)
+            InfoRow(stringResource(R.string.label_soc_manufacturer), localizedSocManufacturer(Build.SOC_MANUFACTURER))
             val socModel = Build.SOC_MODEL
-            val commercialName = socCommercialName(socModel)
+            val commercialName = socCommercialName(Build.SOC_MANUFACTURER, socModel)
             InfoRow(stringResource(R.string.label_soc_model), if (commercialName != null) "$commercialName ($socModel)" else socModel)
         }
     }
