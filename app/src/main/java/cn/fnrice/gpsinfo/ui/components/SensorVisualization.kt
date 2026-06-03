@@ -54,7 +54,8 @@ fun Phone3DView(
                 modifier = Modifier
                     .size(width = 120.dp, height = 200.dp)
                     .graphicsLayer {
-                        rotationX = pitch
+                        // 传感器 pitch 在竖持时 ≈ -90°（相对水平面），加 90° 偏移使竖持为基准
+                        rotationX = pitch + 90f
                         rotationZ = roll
                         // cameraDistance 单位是 px，需要转为 dp 再乘 8
                         cameraDistance = 8f * density
