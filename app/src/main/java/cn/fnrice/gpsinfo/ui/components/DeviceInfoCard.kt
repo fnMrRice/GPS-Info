@@ -59,15 +59,9 @@ private val manufacturerMap = mapOf(
  * 中文环境: "小米 (Xiaomi)"，英文环境: "Xiaomi"
  */
 private fun localizedManufacturer(raw: String): String {
-    val isChinese = Locale.getDefault().language == "zh"
     val lower = raw.lowercase()
     val match = manufacturerMap[lower]
-    return when {
-        match == null -> raw
-        isChinese && match != raw -> "$match ($raw)"
-        !isChinese && match != raw -> "$raw ($match)"
-        else -> raw
-    }
+    return if (match != null && match != raw) "$raw ($match)" else raw
 }
 
 // ── 硬件信息卡片 ──
