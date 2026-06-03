@@ -18,7 +18,11 @@ import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,7 +60,7 @@ private val manufacturerMap = mapOf(
 
 /**
  * 根据当前语言环境，为已知厂商添加本地化名称
- * 中文环境: "小米 (Xiaomi)"，英文环境: "Xiaomi"
+ * 例: "Xiaomi (小米)"
  */
 private fun localizedManufacturer(raw: String): String {
     val lower = raw.lowercase()
@@ -67,9 +71,13 @@ private fun localizedManufacturer(raw: String): String {
 // ── 硬件信息卡片 ──
 @Composable
 fun HardwareInfoCard() {
-    DeviceDetailCard(
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    AppCard(
         title = stringResource(R.string.section_hardware),
         icon = Icons.Default.PhoneAndroid,
+        isExpandable = true,
+        isExpanded = expanded,
+        onExpandChange = { expanded = it },
     ) {
         InfoRow(stringResource(R.string.label_manufacturer), localizedManufacturer(Build.MANUFACTURER))
         InfoRow(stringResource(R.string.label_brand), localizedManufacturer(Build.BRAND))
@@ -88,9 +96,13 @@ fun HardwareInfoCard() {
 // ── 系统信息卡片 ──
 @Composable
 fun SystemInfoCard() {
-    DeviceDetailCard(
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    AppCard(
         title = stringResource(R.string.section_system),
         icon = Icons.Default.Android,
+        isExpandable = true,
+        isExpanded = expanded,
+        onExpandChange = { expanded = it },
     ) {
         InfoRow(stringResource(R.string.label_android_version), "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
         InfoRow(stringResource(R.string.label_build_id), Build.ID)
@@ -112,9 +124,13 @@ fun SystemInfoCard() {
 fun DisplayInfoCard() {
     val context = LocalContext.current
     val displayInfo = remember { getDisplayInfo(context) }
-    DeviceDetailCard(
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    AppCard(
         title = stringResource(R.string.section_display),
         icon = Icons.Default.Straighten,
+        isExpandable = true,
+        isExpanded = expanded,
+        onExpandChange = { expanded = it },
     ) {
         InfoRow(stringResource(R.string.label_resolution), displayInfo.resolution)
         InfoRow(stringResource(R.string.label_density), displayInfo.density)
@@ -127,9 +143,13 @@ fun DisplayInfoCard() {
 fun MemoryInfoCard() {
     val context = LocalContext.current
     val memInfo = remember { getMemoryInfo(context) }
-    DeviceDetailCard(
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    AppCard(
         title = stringResource(R.string.section_memory),
         icon = Icons.Default.Memory,
+        isExpandable = true,
+        isExpanded = expanded,
+        onExpandChange = { expanded = it },
     ) {
         InfoRow(stringResource(R.string.label_total_ram), memInfo.totalRam)
         InfoRow(stringResource(R.string.label_available_ram), memInfo.availableRam)
@@ -140,9 +160,13 @@ fun MemoryInfoCard() {
 @Composable
 fun LocaleInfoCard() {
     val locale = Locale.getDefault()
-    DeviceDetailCard(
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    AppCard(
         title = stringResource(R.string.section_locale),
         icon = Icons.Default.Public,
+        isExpandable = true,
+        isExpanded = expanded,
+        onExpandChange = { expanded = it },
     ) {
         InfoRow(stringResource(R.string.label_language), "${locale.language} (${locale.displayLanguage})")
         InfoRow(stringResource(R.string.label_country), "${locale.country} (${locale.displayCountry})")
@@ -162,9 +186,13 @@ fun AppInfoCard(onVersionClick: () -> Unit) {
         @Suppress("DEPRECATION")
         packageInfo?.versionCode?.toString() ?: "1"
     }
-    DeviceDetailCard(
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    AppCard(
         title = stringResource(R.string.section_app),
         icon = Icons.Default.Apps,
+        isExpandable = true,
+        isExpanded = expanded,
+        onExpandChange = { expanded = it },
     ) {
         InfoRow(stringResource(R.string.label_package_name), context.packageName)
         InfoRow(stringResource(R.string.label_min_sdk), "API ${context.applicationInfo.minSdkVersion}")
