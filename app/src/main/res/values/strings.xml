@@ -77,6 +77,8 @@
     <string name="label_board">Board</string>
     <string name="label_soc_manufacturer">SoC Manufacturer</string>
     <string name="label_soc_model">SoC Model</string>
+    <string name="label_cpu_abi">CPU ABIs</string>
+    <string name="label_cpu_cores">CPU Cores</string>
 
     <!-- System -->
     <string name="label_android_version">Android Version</string>
@@ -89,25 +91,54 @@
     <string name="label_base_os">Base OS</string>
     <string name="label_kernel">Kernel</string>
     <string name="label_baseband">Baseband</string>
+    <string name="label_codename">Codename</string>
+    <string name="label_fingerprint">Fingerprint</string>
+    <string name="label_uptime">Uptime</string>
 
     <!-- Display -->
     <string name="label_resolution">Resolution</string>
     <string name="label_density">Density</string>
     <string name="label_density_dpi">DPI</string>
+    <string name="label_refresh_rate">Refresh Rate</string>
+    <string name="label_screen_size">Screen Size</string>
+    <string name="label_orientation">Orientation</string>
 
     <!-- Memory -->
     <string name="label_total_ram">Total RAM</string>
     <string name="label_available_ram">Available RAM</string>
+    <string name="section_storage">Storage</string>
+    <string name="label_internal_total">Internal Total</string>
+    <string name="label_internal_available">Internal Available</string>
+    <string name="label_external_total">External Total</string>
+    <string name="label_external_available">External Available</string>
 
     <!-- Locale -->
     <string name="label_language">Language</string>
     <string name="label_country">Country</string>
     <string name="label_timezone">Timezone</string>
 
+    <!-- Network -->
+    <string name="section_network">Network</string>
+    <string name="label_network_type">Type</string>
+    <string name="label_carrier">Carrier</string>
+    <string name="label_wifi_ssid">Wi-Fi</string>
+    <string name="label_ip_address">IP Address</string>
+
+    <!-- Battery -->
+    <string name="section_battery">Battery</string>
+    <string name="label_battery_level">Level</string>
+    <string name="label_battery_status">Status</string>
+    <string name="label_battery_health">Health</string>
+    <string name="label_battery_technology">Technology</string>
+    <string name="label_battery_temperature">Temperature</string>
+    <string name="label_battery_voltage">Voltage</string>
+
     <!-- App -->
     <string name="label_package_name">Package</string>
     <string name="label_min_sdk">Min SDK</string>
     <string name="label_target_sdk">Target SDK</string>
+    <string name="label_first_install">First Install</string>
+    <string name="label_last_update">Last Update</string>
     <string name="label_app_version">Version</string>
     <string name="label_sensor_features">Sensor Features</string>
     <string name="label_accelerometer">Accelerometer</string>

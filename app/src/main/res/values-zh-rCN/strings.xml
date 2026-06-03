@@ -77,6 +77,8 @@
     <string name="label_board">主板</string>
     <string name="label_soc_manufacturer">SoC 制造商</string>
     <string name="label_soc_model">SoC 型号</string>
+    <string name="label_cpu_abi">CPU 架构</string>
+    <string name="label_cpu_cores">CPU 核心数</string>
 
     <!-- System -->
     <string name="label_android_version">Android 版本</string>
@@ -89,25 +91,54 @@
     <string name="label_base_os">基础 OS</string>
     <string name="label_kernel">内核</string>
     <string name="label_baseband">基带</string>
+    <string name="label_codename">版本代号</string>
+    <string name="label_fingerprint">构建指纹</string>
+    <string name="label_uptime">运行时间</string>
 
     <!-- Display -->
     <string name="label_resolution">分辨率</string>
     <string name="label_density">密度</string>
     <string name="label_density_dpi">DPI</string>
+    <string name="label_refresh_rate">刷新率</string>
+    <string name="label_screen_size">屏幕尺寸</string>
+    <string name="label_orientation">方向</string>
 
     <!-- Memory -->
     <string name="label_total_ram">总内存</string>
     <string name="label_available_ram">可用内存</string>
+    <string name="section_storage">存储</string>
+    <string name="label_internal_total">内部存储总量</string>
+    <string name="label_internal_available">内部存储可用</string>
+    <string name="label_external_total">外部存储总量</string>
+    <string name="label_external_available">外部存储可用</string>
 
     <!-- Locale -->
     <string name="label_language">语言</string>
     <string name="label_country">国家/地区</string>
     <string name="label_timezone">时区</string>
 
+    <!-- Network -->
+    <string name="section_network">网络</string>
+    <string name="label_network_type">类型</string>
+    <string name="label_carrier">运营商</string>
+    <string name="label_wifi_ssid">Wi-Fi</string>
+    <string name="label_ip_address">IP 地址</string>
+
+    <!-- Battery -->
+    <string name="section_battery">电池</string>
+    <string name="label_battery_level">电量</string>
+    <string name="label_battery_status">状态</string>
+    <string name="label_battery_health">健康</string>
+    <string name="label_battery_technology">电池类型</string>
+    <string name="label_battery_temperature">温度</string>
+    <string name="label_battery_voltage">电压</string>
+
     <!-- App -->
     <string name="label_package_name">包名</string>
     <string name="label_min_sdk">最低 SDK</string>
     <string name="label_target_sdk">目标 SDK</string>
+    <string name="label_first_install">首次安装</string>
+    <string name="label_last_update">最近更新</string>
     <string name="label_app_version">版本</string>
     <string name="label_sensor_features">传感器功能</string>
     <string name="label_accelerometer">加速度计</string>
