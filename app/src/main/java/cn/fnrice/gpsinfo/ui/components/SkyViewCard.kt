@@ -39,7 +39,7 @@ import cn.fnrice.gpsinfo.data.SatelliteInfo
 @Composable
 fun SkyViewCard(
     state: GnssState,
-    actualMapProvider: MapProvider,
+    actualMapProvider: MapProvider?,
     filteredSatellites: List<SatelliteInfo>,
     skyViewExpanded: Boolean,
     onSkyViewExpandChange: (Boolean) -> Unit,
@@ -62,7 +62,7 @@ fun SkyViewCard(
                     )
                 ) {
                     Text(
-                        actualMapProvider.displayName,
+                        actualMapProvider?.displayName ?: stringResource(R.string.detecting),
                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSecondaryContainer

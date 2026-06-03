@@ -40,8 +40,8 @@ class GnssViewModel : ViewModel() {
     private val _mapProvider = MutableStateFlow(MapProvider.AUTO)
     val mapProvider: StateFlow<MapProvider> = _mapProvider.asStateFlow()
 
-    private val _actualMapProvider = MutableStateFlow(MapProvider.GOOGLE)
-    val actualMapProvider: StateFlow<MapProvider> = _actualMapProvider.asStateFlow()
+    private val _actualMapProvider = MutableStateFlow<MapProvider?>(null)
+    val actualMapProvider: StateFlow<MapProvider?> = _actualMapProvider.asStateFlow()
 
     private val _googleApiKey = MutableStateFlow("")
     val googleApiKey: StateFlow<String> = _googleApiKey.asStateFlow()

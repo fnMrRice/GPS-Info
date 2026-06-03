@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +32,7 @@ fun LocationCard(state: GnssState) {
     
     AppCard(
         title = stringResource(R.string.card_location),
+        icon = Icons.Default.LocationOn,
         isExpandable = true,
         isExpanded = isExpanded,
         onExpandChange = { isExpanded = it },

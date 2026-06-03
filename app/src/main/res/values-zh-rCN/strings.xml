@@ -61,7 +61,15 @@
     
     <string name="label_manufacturer">制造商</string>
     <string name="label_model">型号</string>
+    <string name="label_brand">品牌</string>
+    <string name="label_product">产品</string>
+    <string name="label_device">设备代号</string>
+    <string name="label_hardware">硬件</string>
+    <string name="label_board">主板</string>
     <string name="label_android_version">Android 版本</string>
+    <string name="label_build_id">构建 ID</string>
+    <string name="label_build_display">系统版本</string>
+    <string name="label_security_patch">安全补丁</string>
     <string name="label_app_version">版本</string>
     <string name="label_sensor_features">传感器功能</string>
     <string name="label_accelerometer">加速度计</string>
@@ -106,6 +114,7 @@
     <string name="mock_mode_label">模拟数据模式</string>
     <string name="mock_mode_desc">正在使用模拟卫星数据进行测试，关闭后将使用真实GPS。</string>
     
+    <string name="detecting">检测中…</string>
     <string name="provider_gps">GPS</string>
     <string name="provider_network">网络</string>
     <string name="provider_last_known">缓存位置</string>

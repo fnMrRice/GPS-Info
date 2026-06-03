@@ -61,7 +61,15 @@
 
     <string name="label_manufacturer">Manufacturer</string>
     <string name="label_model">Model</string>
+    <string name="label_brand">Brand</string>
+    <string name="label_product">Product</string>
+    <string name="label_device">Device</string>
+    <string name="label_hardware">Hardware</string>
+    <string name="label_board">Board</string>
     <string name="label_android_version">Android Version</string>
+    <string name="label_build_id">Build ID</string>
+    <string name="label_build_display">Build</string>
+    <string name="label_security_patch">Security Patch</string>
     <string name="label_app_version">Version</string>
     <string name="label_sensor_features">Sensor Features</string>
     <string name="label_accelerometer">Accelerometer</string>
@@ -106,6 +114,7 @@
     <string name="mock_mode_label">Mock Data Mode</string>
     <string name="mock_mode_desc">Using simulated satellite data for testing. Toggle off to use real GPS.</string>
     
+    <string name="detecting">Detecting…</string>
     <string name="provider_gps">GPS</string>
     <string name="provider_network">Network</string>
     <string name="provider_last_known">Last Known</string>

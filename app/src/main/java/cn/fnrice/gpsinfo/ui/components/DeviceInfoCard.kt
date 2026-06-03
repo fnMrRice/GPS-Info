@@ -28,12 +28,23 @@ fun DeviceInfoCard(onVersionClick: () -> Unit) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     val packageInfo = remember(context) {
         try {
-            context.packageManager.getPackageInfo(context.packageName, 0)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                context.packageManager.getPackageInfo(context.packageName, android.content.pm.PackageManager.PackageInfoFlags.of(0))
+            } else {
+                @Suppress("DEPRECATION")
+                context.packageManager.getPackageInfo(context.packageName, 0)
+            }
         } catch (_: Exception) {
             null
         }
     }
     val versionName = packageInfo?.versionName ?: "1.0.0"
+    val versionCode = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+        packageInfo?.longVersionCode?.toString() ?: "1"
+    } else {
+        @Suppress("DEPRECATION")
+        packageInfo?.versionCode?.toString() ?: "1"
+    }
 
     DeviceDetailCard(
         title = stringResource(R.string.device_info),
@@ -42,13 +53,25 @@ fun DeviceInfoCard(onVersionClick: () -> Unit) {
         isExpanded = isExpanded,
         onExpandChange = { isExpanded = it }
     ) {
+        // 基本信息
         InfoRow(stringResource(R.string.label_manufacturer), android.os.Build.MANUFACTURER)
         InfoRow(stringResource(R.string.label_model), android.os.Build.MODEL)
+        InfoRow(stringResource(R.string.label_brand), android.os.Build.BRAND)
+        InfoRow(stringResource(R.string.label_product), android.os.Build.PRODUCT)
+        InfoRow(stringResource(R.string.label_device), android.os.Build.DEVICE)
+        InfoRow(stringResource(R.string.label_hardware), android.os.Build.HARDWARE)
+        InfoRow(stringResource(R.string.label_board), android.os.Build.BOARD)
+
+        // 系统信息
         InfoRow(
             stringResource(R.string.label_android_version),
             "${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})"
         )
+        InfoRow(stringResource(R.string.label_build_id), android.os.Build.ID)
+        InfoRow(stringResource(R.string.label_build_display), android.os.Build.DISPLAY)
+        InfoRow(stringResource(R.string.label_security_patch), android.os.Build.VERSION.SECURITY_PATCH.ifEmpty { "---" })
 
+        // 应用信息
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -64,7 +87,7 @@ fun DeviceInfoCard(onVersionClick: () -> Unit) {
                 style = MaterialTheme.typography.bodyMedium
             )
             Text(
-                versionName,
+                "$versionName ($versionCode)",
                 fontWeight = FontWeight.Medium,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary
