@@ -54,7 +54,7 @@ fun MapScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = stringResource(R.string.current_provider, actualMapProvider.displayName),
+                        text = stringResource(R.string.current_provider, actualMapProvider?.displayName ?: stringResource(R.string.detecting)),
                         style = MaterialTheme.typography.bodyLarge
                     )
                     Text(
