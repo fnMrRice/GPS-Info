@@ -322,7 +322,7 @@ private fun getDisplayData(context: Context): DisplayData {
         val diagonal = "%.1f\"".format(Math.sqrt(xInches * xInches + yInches * yInches))
         val refresh = "%.0f Hz".format(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                context.display.refreshRate ?: 0f
+                context.display.refreshRate
             } else {
                 @Suppress("DEPRECATION")
                 wm.defaultDisplay.refreshRate
