@@ -156,7 +156,6 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
         item {
             StatusHeader(
                 state = state,
-                mapProvider = actualMapProvider,
                 onGpsDisabledClick = {
                     context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
                 }

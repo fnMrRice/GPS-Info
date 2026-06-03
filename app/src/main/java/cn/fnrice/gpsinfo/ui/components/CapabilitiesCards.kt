@@ -18,7 +18,7 @@ import cn.fnrice.gpsinfo.viewmodel.SensorCapabilitiesInfo
 @Composable
 fun GnssCapabilitiesCard(caps: GnssCapabilitiesInfo?) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
-    DeviceDetailCard(
+    AppCard(
         title = stringResource(R.string.gnss_capabilities),
         icon = Icons.Default.Memory,
         isExpandable = true,
@@ -50,7 +50,7 @@ fun GnssCapabilitiesCard(caps: GnssCapabilitiesInfo?) {
 @Composable
 fun SensorCapabilitiesCard(caps: SensorCapabilitiesInfo) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
-    DeviceDetailCard(
+    AppCard(
         title = stringResource(R.string.label_sensor_features),
         icon = Icons.Default.Sensors,
         isExpandable = true,

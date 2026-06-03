@@ -19,6 +19,8 @@ import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.ExploreOff
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -54,6 +56,19 @@ fun SkyViewCard(
         icon = Icons.Default.MyLocation,
         headerExtra = {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
+                    Text(
+                        actualMapProvider.displayName,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+                Spacer(modifier = Modifier.width(4.dp))
                 IconButton(
                     onClick = { onMapInfoExpandChange(!isMapInfoExpanded) },
                     modifier = Modifier.size(24.dp)
