@@ -59,6 +59,15 @@
     <string name="map_integration_soon">地图集成即将推出…</string>
     <string name="current_provider">当前提供商: %1$s</string>
     
+    <!-- Device info sections -->
+    <string name="section_hardware">硬件</string>
+    <string name="section_system">系统</string>
+    <string name="section_display">屏幕</string>
+    <string name="section_memory">内存</string>
+    <string name="section_locale">区域与语言</string>
+    <string name="section_app">应用</string>
+
+    <!-- Hardware -->
     <string name="label_manufacturer">制造商</string>
     <string name="label_model">型号</string>
     <string name="label_brand">品牌</string>
@@ -66,10 +75,38 @@
     <string name="label_device">设备代号</string>
     <string name="label_hardware">硬件</string>
     <string name="label_board">主板</string>
+    <string name="label_soc_manufacturer">SoC 制造商</string>
+    <string name="label_soc_model">SoC 型号</string>
+
+    <!-- System -->
     <string name="label_android_version">Android 版本</string>
     <string name="label_build_id">构建 ID</string>
     <string name="label_build_display">系统版本</string>
+    <string name="label_build_type">构建类型</string>
+    <string name="label_build_tags">构建标签</string>
+    <string name="label_bootloader">引导加载程序</string>
     <string name="label_security_patch">安全补丁</string>
+    <string name="label_base_os">基础 OS</string>
+    <string name="label_kernel">内核</string>
+
+    <!-- Display -->
+    <string name="label_resolution">分辨率</string>
+    <string name="label_density">密度</string>
+    <string name="label_density_dpi">DPI</string>
+
+    <!-- Memory -->
+    <string name="label_total_ram">总内存</string>
+    <string name="label_available_ram">可用内存</string>
+
+    <!-- Locale -->
+    <string name="label_language">语言</string>
+    <string name="label_country">国家/地区</string>
+    <string name="label_timezone">时区</string>
+
+    <!-- App -->
+    <string name="label_package_name">包名</string>
+    <string name="label_min_sdk">最低 SDK</string>
+    <string name="label_target_sdk">目标 SDK</string>
     <string name="label_app_version">版本</string>
     <string name="label_sensor_features">传感器功能</string>
     <string name="label_accelerometer">加速度计</string>

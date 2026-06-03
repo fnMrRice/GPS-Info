@@ -59,6 +59,15 @@
     <string name="map_integration_soon">Map integration coming soon…</string>
     <string name="current_provider">Current Provider: %1$s</string>
 
+    <!-- Device info sections -->
+    <string name="section_hardware">Hardware</string>
+    <string name="section_system">System</string>
+    <string name="section_display">Display</string>
+    <string name="section_memory">Memory</string>
+    <string name="section_locale">Region &amp; Language</string>
+    <string name="section_app">App</string>
+
+    <!-- Hardware -->
     <string name="label_manufacturer">Manufacturer</string>
     <string name="label_model">Model</string>
     <string name="label_brand">Brand</string>
@@ -66,10 +75,38 @@
     <string name="label_device">Device</string>
     <string name="label_hardware">Hardware</string>
     <string name="label_board">Board</string>
+    <string name="label_soc_manufacturer">SoC Manufacturer</string>
+    <string name="label_soc_model">SoC Model</string>
+
+    <!-- System -->
     <string name="label_android_version">Android Version</string>
     <string name="label_build_id">Build ID</string>
     <string name="label_build_display">Build</string>
+    <string name="label_build_type">Build Type</string>
+    <string name="label_build_tags">Build Tags</string>
+    <string name="label_bootloader">Bootloader</string>
     <string name="label_security_patch">Security Patch</string>
+    <string name="label_base_os">Base OS</string>
+    <string name="label_kernel">Kernel</string>
+
+    <!-- Display -->
+    <string name="label_resolution">Resolution</string>
+    <string name="label_density">Density</string>
+    <string name="label_density_dpi">DPI</string>
+
+    <!-- Memory -->
+    <string name="label_total_ram">Total RAM</string>
+    <string name="label_available_ram">Available RAM</string>
+
+    <!-- Locale -->
+    <string name="label_language">Language</string>
+    <string name="label_country">Country</string>
+    <string name="label_timezone">Timezone</string>
+
+    <!-- App -->
+    <string name="label_package_name">Package</string>
+    <string name="label_min_sdk">Min SDK</string>
+    <string name="label_target_sdk">Target SDK</string>
     <string name="label_app_version">Version</string>
     <string name="label_sensor_features">Sensor Features</string>
     <string name="label_accelerometer">Accelerometer</string>
