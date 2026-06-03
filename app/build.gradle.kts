@@ -70,6 +70,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material3:material3-adaptive-navigation-suite")
+    implementation("androidx.navigation:navigation-compose:2.9.0")
 
     // Google Maps for Compose
     implementation("com.google.maps.android:maps-compose:8.3.0")

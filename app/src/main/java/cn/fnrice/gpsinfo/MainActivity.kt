@@ -12,12 +12,8 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -25,27 +21,34 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Devices
-import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.SatelliteAlt
-import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material3.Button
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -55,12 +58,19 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import cn.fnrice.gpsinfo.navigation.Screen
+import cn.fnrice.gpsinfo.navigation.topLevelDestinations
+import kotlinx.coroutines.launch
 import cn.fnrice.gpsinfo.ui.components.ToastUtils
 import cn.fnrice.gpsinfo.ui.screen.DeviceScreen
 import cn.fnrice.gpsinfo.ui.screen.HomeScreen
-import cn.fnrice.gpsinfo.ui.screen.MapScreen
 import cn.fnrice.gpsinfo.ui.screen.SensorScreen
-import cn.fnrice.gpsinfo.ui.screen.SettingsDialog
+import cn.fnrice.gpsinfo.ui.screen.SettingsScreen
 import cn.fnrice.gpsinfo.ui.theme.GPSInfoTheme
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
 
@@ -76,44 +86,36 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-enum class AppDestinations(
-    val label: Int,
-    val icon: ImageVector,
-) {
-    SATELLITES(R.string.nav_home, Icons.Default.SatelliteAlt),
-    SENSORS(R.string.nav_sensors, Icons.Default.Sensors),
-    DEVICE(R.string.nav_profile, Icons.Default.Devices);
-
-    companion object {
-        val navItems = entries.toList()
-    }
-}
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GPSInfoApp() {
-    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.SATELLITES) }
+    val navController = rememberNavController()
+    val currentBackStack by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStack?.destination?.route
     var lastBackPressTime by rememberSaveable { mutableStateOf(0L) }
     val viewModel: GnssViewModel = viewModel()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val backExitText = stringResource(R.string.press_back_again_to_exit)
 
+    // 判断当前是否为顶级目的地
+    val isOnTopLevel = topLevelDestinations.any { it.route == currentRoute }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
     BackHandler {
         val currentTime = System.currentTimeMillis()
-        when (currentDestination) {
-            AppDestinations.SATELLITES -> {
-                if (currentTime - lastBackPressTime < 2000) {
-                    (context as? ComponentActivity)?.finish()
-                } else {
-                    lastBackPressTime = currentTime
-                    ToastUtils.showToast(context, backExitText)
-                }
-            }
-            else -> {
-                currentDestination = AppDestinations.SATELLITES
-                lastBackPressTime = currentTime
-                ToastUtils.showToast(context, backExitText)
-            }
+        if (drawerState.isOpen) {
+            scope.launch { drawerState.close() }
+        } else if (!isOnTopLevel) {
+            // 二级页面：返回上一级
+            navController.popBackStack()
+        } else if (currentTime - lastBackPressTime < 2000) {
+            // 顶级页面双击退出
+            (context as? ComponentActivity)?.finish()
+        } else {
+            lastBackPressTime = currentTime
+            ToastUtils.showToast(context, backExitText)
         }
     }
 
@@ -157,14 +159,11 @@ fun GPSInfoApp() {
                     viewModel.startGnss(context)
                 }
             } else if (event == Lifecycle.Event.ON_STOP) {
-                // Keep GNSS running in background for a short time if needed,
-                // but usually for a GPS info app, we stop it to save battery.
                 viewModel.stopGnss()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        
-        // Also ensure startGnss is called if lifecycle is already started
+
         if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
             if (hasLocationPermission) {
                 viewModel.startGnss(context)
@@ -177,21 +176,67 @@ fun GPSInfoApp() {
         }
     }
 
-    var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
+    // 当前页面标题
+    val currentTitle = topLevelDestinations
+        .firstOrNull { it.route == currentRoute }
+        ?.let { stringResource(it.label) }
+        ?: stringResource(R.string.app_name)
 
-    NavigationSuiteScaffold(
-        navigationSuiteItems = {
-            AppDestinations.navItems.forEach { destination ->
-                item(
-                    icon = { Icon(destination.icon, contentDescription = stringResource(destination.label)) },
-                    label = { Text(stringResource(destination.label)) },
-                    selected = destination == currentDestination,
-                    onClick = { currentDestination = destination },
-                )
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(modifier = Modifier.width(280.dp)) {
+                Spacer(Modifier.height(24.dp))
+                // 抽屉头部
+                Column(modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp)) {
+                    Icon(
+                        Icons.Default.SatelliteAlt,
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        stringResource(R.string.app_name),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                }
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                // 顶级导航项
+                topLevelDestinations.forEach { screen ->
+                    NavigationDrawerItem(
+                        icon = { Icon(screen.icon, contentDescription = null) },
+                        label = { Text(stringResource(screen.label)) },
+                        selected = currentRoute == screen.route,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            navController.navigate(screen.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                    )
+                }
             }
-        }
+        },
     ) {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                TopAppBar(
+                    title = { Text(currentTitle) },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Default.Menu, contentDescription = "菜单")
+                        }
+                    },
+                )
+            },
+        ) { innerPadding ->
             if (!hasLocationPermission) {
                 PermissionRequestScreen(
                     onRequestPermission = {
@@ -211,28 +256,28 @@ fun GPSInfoApp() {
                     },
                 )
             } else {
-                AnimatedContent(
-                    targetState = currentDestination,
-                    transitionSpec = {
-                        if (targetState.ordinal > initialState.ordinal) {
-                            (slideInHorizontally { it } + fadeIn()).togetherWith(slideOutHorizontally { -it } + fadeOut())
-                        } else {
-                            (slideInHorizontally { -it } + fadeIn()).togetherWith(slideOutHorizontally { it } + fadeOut())
-                        }
-                    },
-                    label = "NavigationTransition"
-                ) { destination ->
-                    when (destination) {
-                        AppDestinations.SATELLITES -> HomeScreen(viewModel, innerPadding)
-                        AppDestinations.SENSORS -> SensorScreen(viewModel, innerPadding)
-                        AppDestinations.DEVICE -> DeviceScreen(viewModel, innerPadding, onNavigateToSettings = {
-                            showSettingsDialog = true
+                NavHost(
+                    navController = navController,
+                    startDestination = Screen.Satellites.route,
+                    enterTransition = { fadeIn() },
+                    exitTransition = { fadeOut() },
+                    popEnterTransition = { fadeIn() },
+                    popExitTransition = { fadeOut() },
+                ) {
+                    composable(Screen.Satellites.route) {
+                        HomeScreen(viewModel, innerPadding)
+                    }
+                    composable(Screen.Sensors.route) {
+                        SensorScreen(viewModel, innerPadding)
+                    }
+                    composable(Screen.Device.route) {
+                        DeviceScreen(viewModel, innerPadding, onNavigateToSettings = {
+                            navController.navigate(Screen.Settings.route)
                         })
                     }
-                }
-
-                if (showSettingsDialog) {
-                    SettingsDialog(viewModel = viewModel, onDismiss = { showSettingsDialog = false })
+                    composable(Screen.Settings.route) {
+                        SettingsScreen(viewModel = viewModel, innerPadding = innerPadding)
+                    }
                 }
             }
         }
@@ -286,4 +331,3 @@ private fun PermissionRequestScreen(
         }
     }
 }
-  

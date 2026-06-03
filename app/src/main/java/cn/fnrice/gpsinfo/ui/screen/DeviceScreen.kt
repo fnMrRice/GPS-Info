@@ -20,7 +20,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cn.fnrice.gpsinfo.R
 import cn.fnrice.gpsinfo.ui.components.DeviceInfoCard
@@ -63,12 +62,6 @@ fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues, onNaviga
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(
-            stringResource(R.string.profile_title),
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
-        )
-
         DeviceInfoCard(onVersionClick)
 
         GnssCapabilitiesCard(capabilities)

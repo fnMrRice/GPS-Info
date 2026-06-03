@@ -20,7 +20,6 @@ fun StatusHeader(state: GnssState, mapProvider: MapProvider, onGpsDisabledClick:
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text(stringResource(R.string.status_satellites), style = MaterialTheme.typography.headlineSmall)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     stringResource(R.string.status_used_visible, state.satellitesUsedInFix, state.satellitesTotal),
