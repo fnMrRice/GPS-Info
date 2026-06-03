@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -24,12 +22,11 @@ import androidx.compose.ui.unit.dp
 import cn.fnrice.gpsinfo.R
 import cn.fnrice.gpsinfo.ui.components.DeviceInfoCard
 import cn.fnrice.gpsinfo.ui.components.GnssCapabilitiesCard
-import cn.fnrice.gpsinfo.ui.components.SettingsEntryCard
 import cn.fnrice.gpsinfo.ui.components.ToastUtils
 import cn.fnrice.gpsinfo.viewmodel.GnssViewModel
 
 @Composable
-fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues, onNavigateToSettings: () -> Unit) {
+fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     val context = LocalContext.current
     val capabilities = remember { viewModel.getGnssCapabilities(context) }
     val isDeveloperMode by viewModel.isDeveloperMode.collectAsState()
@@ -53,7 +50,6 @@ fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues, onNaviga
         }
     }
 
-    // Renders scrollable profile UI with conditional capability cards
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -66,15 +62,6 @@ fun DeviceScreen(viewModel: GnssViewModel, innerPadding: PaddingValues, onNaviga
 
         GnssCapabilitiesCard(capabilities)
 
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            stringResource(R.string.settings_title),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(horizontal = 4.dp)
-        )
-        SettingsEntryCard(onNavigateToSettings)
-        
         Spacer(modifier = Modifier.height(12.dp))
     }
 }

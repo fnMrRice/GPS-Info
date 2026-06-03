@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import cn.fnrice.gpsinfo.R
 import cn.fnrice.gpsinfo.data.SatelliteGroup
 import cn.fnrice.gpsinfo.data.SatelliteInfo
+import cn.fnrice.gpsinfo.ui.components.GnssCapabilitiesCard
 import cn.fnrice.gpsinfo.ui.components.LocationCard
 import cn.fnrice.gpsinfo.ui.components.SatelliteCard
 import cn.fnrice.gpsinfo.ui.components.SatelliteFilterSection
@@ -73,6 +74,7 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
     }
 
     val actualMapProvider by viewModel.actualMapProvider.collectAsState()
+    val capabilities = remember { viewModel.getGnssCapabilities(context) }
     val filteredSatellites = remember(state.satellites, filterConstellation, filterStatus, context) {
         val list = state.satellites.filter {
             val matchesConstellation = filterConstellation == null || it.getConstellationName(context) == filterConstellation
@@ -163,6 +165,10 @@ fun HomeScreen(viewModel: GnssViewModel, innerPadding: PaddingValues) {
 
         item {
             LocationCard(state)
+        }
+
+        item {
+            GnssCapabilitiesCard(capabilities)
         }
 
         item {

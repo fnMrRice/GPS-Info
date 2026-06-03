@@ -271,9 +271,7 @@ fun GPSInfoApp() {
                         SensorScreen(viewModel, innerPadding)
                     }
                     composable(Screen.Device.route) {
-                        DeviceScreen(viewModel, innerPadding, onNavigateToSettings = {
-                            navController.navigate(Screen.Settings.route)
-                        })
+                        DeviceScreen(viewModel, innerPadding)
                     }
                     composable(Screen.Settings.route) {
                         SettingsScreen(viewModel = viewModel, innerPadding = innerPadding)
